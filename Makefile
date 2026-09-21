@@ -13,7 +13,7 @@ export ECOORIGEM_DATA_DIR ?= $(DATA_DIR)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help menu venv install shell test coverage lint format format-check security check \
+.PHONY: help menu venv install shell test coverage lint format format-check security check scenarios docs-deps demo-video \
         node deploy app seed accounts status validate start stop reset \
         docker-build docker-up docker-down docker-logs docker-seed docker-test docker-reset docker-status \
         clean
@@ -68,6 +68,16 @@ security: venv ## Executa Bandit e pip-audit (Black Duck não está disponível 
 	$(VENV_PY) -m pip_audit -r requirements.txt
 
 check: format-check lint test security ## Executa formatação, lint, testes e segurança
+
+scenarios: venv ## Executa os cenários documentados e gera docs/evidencias/cenarios-de-teste.md
+	PYTHONPATH=. $(VENV_PY) scripts/run_scenarios.py
+
+docs-deps: venv ## Instala as ferramentas de evidência (Playwright, Pillow, python-docx)
+	$(VENV_PY) -m pip install --quiet -r requirements-docs.txt
+	$(VENV_PY) -m playwright install ffmpeg
+
+demo-video: docs-deps ## Grava screenshots e o vídeo de apoio com a stack Docker no ar
+	$(VENV_PY) scripts/record_demo.py
 
 ## --------------------------------------------- blockchain local (sem Docker)
 node: venv ## 1) Inicia a blockchain local (porta 8545)
