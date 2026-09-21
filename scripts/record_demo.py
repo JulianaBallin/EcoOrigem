@@ -62,6 +62,12 @@ class Demo:
         self.pause(1.5)
 
 
+def expect(page: Page, selector: str, message: str) -> None:
+    """Fail the run when the expected outcome panel is not shown."""
+    if page.locator(selector).count() != 1:
+        raise RuntimeError(f"Resultado inesperado: {message}")
+
+
 def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
     """Execute the whole demonstration script."""
     page = demo.page
@@ -78,7 +84,7 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
     demo.fill("register_lot", "quantity_kg", "250")
     demo.shot("02-registrar-formulario")
     demo.send()
-    assert page.locator(".outcome.ok").count() == 1, "register_lot should be confirmed"
+    expect(page, ".outcome.ok", "register_lot should be confirmed")
     demo.shot("03-registrar-confirmado")
     lot_id = page.locator(".outcome.ok a.btn").first.inner_text().split()[-1]
 
@@ -92,9 +98,7 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
         "Despolpamento, pasteurização e congelamento.",
     )
     demo.send()
-    assert (
-        page.locator(".outcome.ok").count() == 1
-    ), "record_processing should be confirmed"
+    expect(page, ".outcome.ok", "record_processing should be confirmed")
 
     # 4. Query the record and the state change
     demo.goto(f"consultar/{lot_id}")
@@ -116,9 +120,7 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
         page.get_by_role("button", name=scenario).click()
         demo.pause(0.8)
         demo.send()
-        assert (
-            page.locator(".outcome.bad").count() == 1
-        ), f"{scenario} should be rejected"
+        expect(page, ".outcome.bad", f"{scenario} should be rejected")
         demo.shot(f"05-rejeicao-{index}")
     demo.goto("rejeicoes")
     demo.shot("06-rejeicoes", full=True)

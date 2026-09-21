@@ -55,7 +55,8 @@ def cmd_node(settings: Settings, args: argparse.Namespace) -> int:
     )
     if not status["integrity"]["valid"]:
         _print(
-            "ATENÇÃO: a verificação de integridade falhou. Operações de escrita bloqueadas."
+            "ATENÇÃO: a verificação de integridade falhou. "
+            "Operações de escrita bloqueadas."
         )
     _serve(app, args.host or settings.node_host, args.port or settings.node_port, "Nó")
     return 0

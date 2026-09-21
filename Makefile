@@ -55,13 +55,13 @@ coverage: venv ## Executa os testes com relatório de cobertura
 	$(VENV_PY) -m pytest -q --cov --cov-report=term-missing
 
 lint: venv ## Executa o Pylint
-	$(VENV_PY) -m pylint ecoorigem tests
+	$(VENV_PY) -m pylint ecoorigem tests scripts
 
 format: venv ## Formata o código com Black
-	$(VENV_PY) -m black ecoorigem tests
+	$(VENV_PY) -m black ecoorigem tests scripts
 
 format-check: venv ## Confere a formatação com Black sem alterar arquivos
-	$(VENV_PY) -m black --check ecoorigem tests
+	$(VENV_PY) -m black --check ecoorigem tests scripts
 
 security: venv ## Executa Bandit e pip-audit (Black Duck não está disponível neste ambiente)
 	$(VENV_PY) -m bandit -q -r ecoorigem

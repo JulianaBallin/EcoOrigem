@@ -105,7 +105,8 @@ class Lab:
         return obtained
 
 
-def run(lab: Lab) -> None:  # pylint: disable=too-many-statements
+def run(lab: Lab) -> None:  # pylint: disable=too-many-statements,too-many-locals
+    """Execute every documented scenario."""
     node, w = lab.node, lab.w
     valid, invalid, integrity = (
         "Operação válida",
