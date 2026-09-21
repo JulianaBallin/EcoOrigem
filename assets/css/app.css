@@ -308,3 +308,5 @@ dialog::backdrop { background: rgba(6, 42, 25, 0.55); }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 
 td strong { white-space: nowrap; }
+input[type="checkbox"], input[type="radio"] { width: auto; flex: none; accent-color: var(--green-700); }
+label.row { align-items: flex-start; font-size: 0.88rem; }

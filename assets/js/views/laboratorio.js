@@ -1,5 +1,5 @@
 // Integrity laboratory: shows how tampering with stored data is detected.
-import { api, ApiError, clear, h, icon, prettyJson, setBusy, toast } from "../lib.js";
+import { api, ApiError, append, clear, h, icon, prettyJson, setBusy, toast } from "../lib.js";
 import { refreshCore, state } from "../state.js";
 
 function reportCard(report) {
@@ -48,7 +48,7 @@ export const laboratorio = {
     const validate = h("button", { type: "button", class: "btn secondary", onclick: () => call(validate, () => api.get("validate"), "Validando…") }, icon("shield", 16), "Validar cadeia");
     const restore = h("button", { type: "button", class: "btn", onclick: () => call(restore, () => api.post("lab/restore"), "Restaurando…") }, icon("refresh", 16), "Restaurar da cópia em disco");
 
-    clear(root).append(
+    append(clear(root), [
       h("div", { class: "view-head" }, h("div", {}, h("h1", {}, "Integridade e imutabilidade"), h("p", {}, "Altere um dado já gravado e veja a validação da cadeia detectar a fraude. A alteração acontece só em memória; o arquivo em disco não é modificado."))),
       state.status?.lab_enabled === false ? h("div", { class: "notice warn" }, "O laboratório está desativado neste nó.") : null,
       h(
@@ -79,6 +79,6 @@ export const laboratorio = {
           h("p", { class: "hint" }, "Limitação: em um único nó local não há rede para recusar a versão adulterada. Em uma rede real, os demais participantes rejeitariam a cadeia alterada."),
         ),
       ),
-    );
+    ]);
   },
 };
