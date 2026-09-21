@@ -1,0 +1,7 @@
+# Ferramentas para gerar evidências e documentação (não necessárias para executar o sistema).
+-r requirements.txt
+playwright==1.63.0
+pillow
+numpy
+python-docx
+matplotlib
