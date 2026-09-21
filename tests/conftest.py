@@ -129,3 +129,16 @@ VALID_LOT = {
     "harvest_date": "2026-09-10",
 }
 DOC_HASH = "a" * 64
+
+
+# --------------------------------------------------------------- HTTP helpers
+def flask_transport(test_client):
+    """Adapt a Flask test client to the transport expected by ``NodeClient``."""
+
+    def send(method, path, params, payload):
+        response = test_client.open(
+            path, method=method, query_string=params, json=payload
+        )
+        return response.status_code, response.get_json()
+
+    return send
