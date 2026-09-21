@@ -5,17 +5,22 @@ pela equipe. Todos os integrantes participam e devem dominar o projeto.
 
 | Tempo | Conteúdo | Slides | Sugestão de fala |
 | --- | --- | --- | --- |
-| 2 min | Problema, objetivo e justificativa do uso de blockchain | 1 a 3 | Ana |
-| 2 min | Arquitetura e funcionamento do contrato inteligente | 4 e 5 | Fernando |
-| 4 min | Demonstração prática na blockchain local | 6 | Juliana, Fernando e Ana |
-| 2 min | Testes, limitações e conclusão | 7 e 8 | Juliana |
+| 2 min | Contexto, problema, dados e solução (problema, objetivo e justificativa do uso de blockchain) | 1 a 5 | Ana |
+| 2 min | Arquitetura e funcionamento do contrato inteligente | 6 e 7 | Fernando |
+| 4 min | Demonstração prática na blockchain local | 8 | Juliana, Fernando e Ana |
+| 2 min | Testes, limitações e conclusão | 9 e 10 | Juliana |
+| Reserva | Bônus: relatório, laboratório de integridade e execução reproduzível | 11 a 14 | Perguntas |
+
+Os slides 11 a 14 mostram o que foi feito além do pedido e ficam para o caso de sobrar tempo
+ou para responder perguntas. Os dados do slide 4 vêm do IBGE (PEVS 2023) e as fotos têm
+créditos em `docs/assets/produtos/CREDITOS.md`.
 
 ## Antes de começar
 
 1. Confirmar que a máquina tem Docker ou o ambiente virtual criado.
 2. Subir a stack limpa: `make docker-reset && make docker-up && make docker-seed`.
-3. Abrir <http://127.0.0.1:5000> e a apresentação em `docs/apresentacao-ecoorigem.pdf`.
-4. Deixar `docs/video/demonstracao.webm` aberto em outra janela como plano B.
+3. Abrir <http://127.0.0.1:5000> e a apresentação em `docs/slides/apresentacao-ecoorigem.pdf`.
+4. Deixar `docs/slides/video/demonstracao.webm` aberto em outra janela como plano B.
 
 ## Demonstração em quatro passos
 
@@ -35,7 +40,7 @@ Extras se sobrar tempo: aba Blockchain com a prova de Merkle e aba Integridade c
 | --- | --- |
 | Docker não sobe | Usar `make start` (sem Docker) |
 | Porta ocupada | `make stop` ou `make docker-down` e repetir |
-| Interface fora do ar | Exibir `docs/video/demonstracao.webm` |
+| Interface fora do ar | Exibir `docs/slides/video/demonstracao.webm` |
 | Estado sujo entre ensaios | `make docker-reset && make docker-up && make docker-seed` |
 
 ## Perguntas prováveis
