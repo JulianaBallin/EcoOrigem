@@ -13,7 +13,7 @@ export ECOORIGEM_DATA_DIR ?= $(DATA_DIR)
 
 .DEFAULT_GOAL := help
 
-.PHONY: help menu venv install shell test coverage lint format format-check security check scenarios docs-deps demo-video \
+.PHONY: report slides diagrams help menu venv install shell test coverage lint format format-check security check scenarios docs-deps demo-video \
         node deploy app seed accounts status validate start stop reset \
         docker-build docker-up docker-down docker-logs docker-seed docker-test docker-reset docker-status \
         clean
@@ -75,6 +75,15 @@ scenarios: venv ## Executa os cenários documentados e gera docs/evidencias/cena
 docs-deps: venv ## Instala as ferramentas de evidência (Playwright, Pillow, python-docx)
 	$(VENV_PY) -m pip install --quiet -r requirements-docs.txt
 	$(VENV_PY) -m playwright install ffmpeg
+
+report: docs-deps ## Gera o relatório técnico (DOCX e PDF) em docs/
+	$(VENV_PY) scripts/build_report.py
+
+slides: report ## Gera a apresentação (PPTX e PDF) em docs/
+	$(VENV_PY) scripts/build_slides.py
+
+diagrams: docs-deps ## Regera os diagramas em docs/assets/diagramas
+	$(VENV_PY) scripts/build_diagrams.py
 
 demo-video: docs-deps ## Grava screenshots e o vídeo de apoio com a stack Docker no ar
 	$(VENV_PY) scripts/record_demo.py

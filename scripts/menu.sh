@@ -30,6 +30,9 @@ OPTIONS=(
   "security|Qualidade|Executa Bandit e pip-audit"
   "check|Qualidade|Executa formatação, lint, testes e segurança"
   "scenarios|Evidências|Executa os cenários documentados e gera o relatório de resultados"
+  "diagrams|Evidências|Regera os diagramas usados na documentação"
+  "report|Evidências|Gera o relatório técnico em DOCX e PDF"
+  "slides|Evidências|Gera a apresentação em PPTX e PDF"
   "demo-video|Evidências|Grava screenshots e o vídeo de apoio (stack Docker precisa estar no ar)"
 )
 
