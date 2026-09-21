@@ -70,7 +70,7 @@ Ed25519 e um nó com contrato inteligente.
 | Contrato inteligente | [ecoorigem/contract/](ecoorigem/contract/) | Perfis, máquina de estados, validações e eventos |
 | Blockchain | [ecoorigem/blockchain/](ecoorigem/blockchain/) | Blocos, prova de trabalho, árvore de Merkle, assinaturas e validação |
 
-O detalhamento das decisões está no [relatório técnico](docs/relatorio-tecnico-ecoorigem.pdf).
+O detalhamento das decisões está no [relatório técnico](docs/relatorio/relatorio-tecnico-ecoorigem.pdf).
 
 ---
 
@@ -92,7 +92,7 @@ O detalhamento das decisões está no [relatório técnico](docs/relatorio-tecni
 
 Saltar ou repetir etapas retorna `INVALID_TRANSITION`, e qualquer operação sobre
 um lote FINALIZADO retorna `LOT_FINALIZED`. A referência completa está em
-[docs/contrato-inteligente.md](docs/contrato-inteligente.md).
+[docs/relatorio/contrato-inteligente.md](docs/relatorio/contrato-inteligente.md).
 
 ---
 
@@ -115,13 +115,10 @@ um lote FINALIZADO retorna `LOT_FINALIZED`. A referência completa está em
 EcoOrigem/
 ├── assets/                 # assets do sistema: css, js e imagens da interface
 ├── docs/
-│   ├── assets/             # diagramas, evidências, logos e recortes dos slides
+│   ├── relatorio/          # relatório técnico (docx e pdf) e referência do contrato
+│   ├── slides/             # apresentação (pptx e pdf), roteiro e vídeo de apoio
 │   ├── evidencias/         # cenários de teste e métricas medidas
-│   ├── video/              # vídeo de apoio da demonstração
-│   ├── relatorio-tecnico-ecoorigem.(docx|pdf)
-│   ├── apresentacao-ecoorigem.(pptx|pdf)
-│   ├── contrato-inteligente.md
-│   └── roteiro-apresentacao.md
+│   └── assets/             # diagramas, evidências, produtos, logos e recortes dos slides
 ├── ecoorigem/
 │   ├── blockchain/         # bloco, cadeia, Merkle, carteira, transação
 │   ├── contract/           # contrato inteligente EcoOrigem
@@ -215,7 +212,7 @@ falta de permissão e adulteração de blocos. Reproduza com `make scenarios`.
 | --- | --- |
 | ![Blocos](docs/assets/evidencias/07-blockchain.png) | ![Adulteração](docs/assets/evidencias/10-adulteracao-detectada.png) |
 
-O [vídeo de apoio](docs/video/demonstracao.webm) mostra a demonstração completa
+O [vídeo de apoio](docs/slides/video/demonstracao.webm) mostra a demonstração completa
 e serve de plano B em caso de falha técnica.
 
 ---
@@ -224,11 +221,12 @@ e serve de plano B em caso de falha técnica.
 
 | Documento | Conteúdo |
 | --- | --- |
-| [Relatório técnico](docs/relatorio-tecnico-ecoorigem.pdf) ([docx](docs/relatorio-tecnico-ecoorigem.docx)) | Problema, objetivos, justificativa, arquitetura, implementação, testes, limitações e conclusão |
-| [Apresentação](docs/apresentacao-ecoorigem.pdf) ([pptx](docs/apresentacao-ecoorigem.pptx)) | Slides dos 10 minutos de apresentação |
+| [Relatório técnico](docs/relatorio/relatorio-tecnico-ecoorigem.pdf) ([docx](docs/relatorio/relatorio-tecnico-ecoorigem.docx)) | Problema, objetivos, justificativa, arquitetura, implementação, testes, limitações e conclusão |
+| [Apresentação](docs/slides/apresentacao-ecoorigem.pdf) ([pptx](docs/slides/apresentacao-ecoorigem.pptx)) | 10 slides da apresentação de 10 minutos e 4 slides de bônus |
+| [Créditos das fotos](docs/assets/produtos/CREDITOS.md) | Autoria e licença das fotos de produtos usadas nos slides |
 | [Cenários de teste](docs/evidencias/cenarios-de-teste.md) | Operações realizadas, resultados esperados e obtidos |
-| [Contrato inteligente](docs/contrato-inteligente.md) | Métodos, argumentos, perfis e códigos de erro |
-| [Roteiro](docs/roteiro-apresentacao.md) | Divisão do tempo, checklist da demonstração e plano de contingência |
+| [Contrato inteligente](docs/relatorio/contrato-inteligente.md) | Métodos, argumentos, perfis e códigos de erro |
+| [Roteiro](docs/slides/roteiro-apresentacao.md) | Divisão do tempo, checklist da demonstração e plano de contingência |
 
 ---
 
