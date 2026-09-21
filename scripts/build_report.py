@@ -46,7 +46,7 @@ DIAGRAMS = ASSETS / "diagramas"
 SHOTS = ASSETS / "evidencias"
 SCENARIOS_MD = ROOT / "docs" / "evidencias" / "cenarios-de-teste.md"
 METRICS_JSON = ROOT / "docs" / "evidencias" / "metricas.json"
-OUT_DIR = ROOT / "docs"
+OUT_DIR = ROOT / "docs" / "relatorio"
 NAME = "relatorio-tecnico-ecoorigem"
 TEAM = [
     "Ana Beatriz Maciel Nunes",

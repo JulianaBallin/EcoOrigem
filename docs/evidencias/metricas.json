@@ -13,8 +13,8 @@
     "tests/test_wallet_keystore.py": 11,
     "tests/test_web.py": 18
   },
-  "pylint": "10.00",
-  "black": true,
+  "pylint": "9.99",
+  "black": false,
   "bandit": true,
   "audit": "Nenhuma vulnerabilidade conhecida",
   "scenarios": {

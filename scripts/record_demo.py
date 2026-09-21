@@ -180,7 +180,9 @@ def main() -> int:
     parser.add_argument("--base", default="http://127.0.0.1:5000")
     parser.add_argument("--pace", type=int, default=1200, help="pausa base em ms")
     parser.add_argument(
-        "--video", type=Path, default=ROOT / "docs" / "video" / "demonstracao.webm"
+        "--video",
+        type=Path,
+        default=ROOT / "docs" / "slides" / "video" / "demonstracao.webm",
     )
     args = parser.parse_args()
 
