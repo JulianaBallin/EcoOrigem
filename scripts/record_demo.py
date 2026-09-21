@@ -16,7 +16,7 @@ from pathlib import Path
 from playwright.sync_api import Page, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
-SHOTS = ROOT / "assets" / "img" / "evidencias"
+SHOTS = ROOT / "docs" / "assets" / "evidencias"
 
 
 class Demo:
@@ -42,9 +42,19 @@ class Demo:
         self.page.select_option("#wallet-select", label=name)
         self.pause(0.5)
 
-    def shot(self, name: str, full: bool = False) -> None:
-        """Save a screenshot under assets/img/evidencias."""
-        self.page.screenshot(path=str(SHOTS / f"{name}.png"), full_page=full)
+    def shot(self, name: str, full: bool = False, selector: str | None = None) -> None:
+        """Save a screenshot under docs/assets/evidencias, hiding transient toasts."""
+        self.page.evaluate(
+            "document.getElementById('toasts').style.visibility = 'hidden'"
+        )
+        target = str(SHOTS / f"{name}.png")
+        if selector:
+            self.page.locator(selector).first.screenshot(path=target)
+        else:
+            self.page.screenshot(path=target, full_page=full)
+        self.page.evaluate(
+            "document.getElementById('toasts').style.visibility = 'visible'"
+        )
 
     def operation(self, title: str) -> None:
         """Choose an operation in the list."""
@@ -85,7 +95,7 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
     demo.shot("02-registrar-formulario")
     demo.send()
     expect(page, ".outcome.ok", "register_lot should be confirmed")
-    demo.shot("03-registrar-confirmado")
+    demo.shot("03-registrar-confirmado", selector=".outcome.ok")
     lot_id = page.locator(".outcome.ok a.btn").first.inner_text().split()[-1]
 
     # 3. Second valid step, by another profile
@@ -121,7 +131,7 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
         demo.pause(0.8)
         demo.send()
         expect(page, ".outcome.bad", f"{scenario} should be rejected")
-        demo.shot(f"05-rejeicao-{index}")
+        demo.shot(f"05-rejeicao-{index}", selector=".outcome.bad")
     demo.goto("rejeicoes")
     demo.shot("06-rejeicoes", full=True)
 
@@ -145,14 +155,14 @@ def run(demo: Demo) -> None:  # pylint: disable=too-many-statements
     page.get_by_role("button", name="Adulterar dado gravado").click()
     page.wait_for_selector("#view-laboratorio .notice.bad")
     demo.pause(1.5)
-    demo.shot("10-adulteracao-detectada")
+    demo.shot("10-adulteracao-detectada", full=True)
     demo.goto("blockchain")
     demo.shot("11-blockchain-adulterada")
     demo.goto("laboratorio")
     page.get_by_role("button", name="Restaurar da cópia em disco").click()
     page.wait_for_selector("#view-laboratorio .notice.ok")
     demo.pause(1.5)
-    demo.shot("12-cadeia-restaurada")
+    demo.shot("12-cadeia-restaurada", full=True)
 
 
 def is_unexpected(message) -> bool:
