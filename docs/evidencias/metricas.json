@@ -1,0 +1,26 @@
+{
+  "passed": 248,
+  "failed": false,
+  "coverage": 97,
+  "per_file": {
+    "tests/test_block_chain.py": 25,
+    "tests/test_cli_client.py": 11,
+    "tests/test_contract.py": 87,
+    "tests/test_hashing_merkle.py": 16,
+    "tests/test_node.py": 40,
+    "tests/test_node_api.py": 15,
+    "tests/test_transaction.py": 25,
+    "tests/test_wallet_keystore.py": 11,
+    "tests/test_web.py": 18
+  },
+  "pylint": "10.00",
+  "black": true,
+  "bandit": true,
+  "audit": "Nenhuma vulnerabilidade conhecida",
+  "scenarios": {
+    "V": 16,
+    "ok": 48,
+    "I": 27,
+    "A": 5
+  }
+}

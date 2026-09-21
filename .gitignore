@@ -220,5 +220,4 @@ __marimo__/
 # EcoOrigem
 .venv-ecoorigem/
 data/
-*.webm
 docs/evidencias/tmp/
