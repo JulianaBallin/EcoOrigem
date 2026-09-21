@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# EcoOrigem
+.venv-ecoorigem/
+data/
+*.webm
+docs/evidencias/tmp/
