@@ -1,4 +1,4 @@
-# pylint: disable=line-too-long,wrong-import-position,too-many-arguments,too-many-positional-arguments,use-dict-literal,too-many-locals,unnecessary-lambda-assignment
+# pylint: disable=duplicate-code,line-too-long,wrong-import-position,too-many-arguments,too-many-positional-arguments,use-dict-literal,too-many-locals,unnecessary-lambda-assignment
 """Generate the architecture diagrams used by the report and the README.
 
 All arrows are orthogonal (90 degree turns) and routed through free space.
@@ -13,9 +13,10 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt  # noqa: E402
+from PIL import Image  # noqa: E402
 from matplotlib.patches import FancyBboxPatch  # noqa: E402
 
-OUT = Path(__file__).resolve().parents[1] / "assets" / "img" / "diagramas"
+OUT = Path(__file__).resolve().parents[1] / "docs" / "assets" / "diagramas"
 GREEN_900, GREEN_700, GREEN_100, GREEN_50 = "#0b3d24", "#17693d", "#e3f0dc", "#f1f7ee"
 INK, MUTED, BORDER = "#17261d", "#5a6b61", "#9fbf9a"
 AMBER, BLUE, TEAL = "#fff4dd", "#e6f1fb", "#dff3f1"
@@ -23,7 +24,7 @@ AMBER, BLUE, TEAL = "#fff4dd", "#e6f1fb", "#dff3f1"
 
 def canvas(width: float, height: float):
     """Create a figure whose axes use a 0..width by 0..height coordinate system."""
-    fig, ax = plt.subplots(figsize=(width / 100, height / 100), dpi=200)
+    fig, ax = plt.subplots(figsize=(width / 135, height / 135), dpi=260)
     ax.set_xlim(0, width)
     ax.set_ylim(height, 0)
     ax.axis("off")
@@ -69,11 +70,11 @@ def box(
     for index, line in enumerate(lines):
         ax.text(
             x + w / 2,
-            y + 42 + index * 17,
+            y + 50 + index * 20,
             line,
             ha="center",
             va="center",
-            fontsize=size - 2.5,
+            fontsize=size - 2,
             color=INK,
         )
 
@@ -118,28 +119,29 @@ def arrow(ax, points, label=None, label_at=None, color=GREEN_700, both=False):
             label,
             ha="left",
             va="center",
-            fontsize=8.5,
+            fontsize=9,
             color=MUTED,
             style="italic",
         )
 
 
 def save(fig, name):
-    """Write the figure to assets/img/diagramas."""
+    """Write the figure to docs/assets/diagramas."""
     OUT.mkdir(parents=True, exist_ok=True)
     fig.savefig(OUT / name, facecolor="white")
     plt.close(fig)
+    Image.open(OUT / name).convert("RGB").save(OUT / name, optimize=True)
 
 
 def architecture():
     """Layers: browser, wallet gateway, node (API, contract, chain), storage."""
-    fig, ax = canvas(1100, 660)
+    fig, ax = canvas(1100, 700)
     box(
         ax,
         330,
         20,
         440,
-        80,
+        95,
         "Navegador",
         [
             "Interface web (HTML, CSS e JavaScript)",
@@ -152,9 +154,9 @@ def architecture():
     box(
         ax,
         330,
-        170,
+        180,
         440,
-        100,
+        120,
         "Gateway web e carteiras",
         [
             "Flask + keystore local (Ed25519)",
@@ -165,13 +167,13 @@ def architecture():
         edge="#b26a00",
         bold="#5c3a00",
     )
-    arrow(ax, [(550, 100), (550, 170)], "HTTP e JSON", (562, 135))
-    arrow(ax, [(550, 270), (550, 340)], "transação assinada (JSON)", (562, 305))
+    arrow(ax, [(550, 115), (550, 180)], "HTTP e JSON", (562, 148))
+    arrow(ax, [(550, 300), (550, 360)], "transação assinada (JSON)", (562, 330))
     ax.add_patch(
         FancyBboxPatch(
-            (40, 340),
+            (40, 360),
             1020,
-            250,
+            270,
             boxstyle="round,pad=0,rounding_size=12",
             fc="white",
             ec=GREEN_700,
@@ -181,7 +183,7 @@ def architecture():
     )
     ax.text(
         60,
-        362,
+        384,
         "Nó da blockchain local (processo Python, porta 8545)",
         fontsize=11,
         fontweight="bold",
@@ -191,9 +193,9 @@ def architecture():
     box(
         ax,
         70,
-        400,
+        420,
         280,
-        160,
+        180,
         "API e validação",
         [
             "Verifica assinatura, nonce",
@@ -206,9 +208,9 @@ def architecture():
     box(
         ax,
         410,
-        400,
+        420,
         280,
-        160,
+        180,
         "Contrato inteligente",
         [
             "EcoOrigem (Python)",
@@ -222,22 +224,22 @@ def architecture():
     box(
         ax,
         750,
-        400,
+        420,
         280,
-        160,
+        180,
         "Cadeia de blocos",
         [
-            "Blocos encadeados por SHA-256",
+            "Blocos ligados por SHA-256",
             "Raiz de Merkle por bloco",
             "Prova de trabalho (nonce)",
             "Persistência em ledger.json",
         ],
     )
-    arrow(ax, [(350, 480), (410, 480)], both=True)
-    arrow(ax, [(690, 480), (750, 480)], both=True)
+    arrow(ax, [(350, 510), (410, 510)], both=True)
+    arrow(ax, [(690, 510), (750, 510)], both=True)
     ax.text(
         550,
-        625,
+        668,
         "O estado do contrato é reconstruído reexecutando as transações da cadeia.",
         ha="center",
         va="center",
@@ -246,6 +248,94 @@ def architecture():
         style="italic",
     )
     save(fig, "arquitetura.png")
+
+
+def architecture_slide():
+    """Simplified architecture with larger text, for the presentation."""
+    fig, ax = canvas(1100, 600)
+    box(
+        ax,
+        330,
+        10,
+        440,
+        80,
+        "Navegador",
+        ["Interface web"],
+        fill=BLUE,
+        edge="#175a96",
+        bold="#0f3f6b",
+        size=13,
+    )
+    box(
+        ax,
+        330,
+        160,
+        440,
+        90,
+        "Gateway e carteiras",
+        ["Assina com a carteira ativa"],
+        fill=AMBER,
+        edge="#b26a00",
+        bold="#5c3a00",
+        size=13,
+    )
+    arrow(ax, [(550, 90), (550, 160)], "HTTP e JSON", (565, 125))
+    arrow(ax, [(550, 250), (550, 320)], "transação assinada", (565, 285))
+    ax.add_patch(
+        FancyBboxPatch(
+            (30, 320),
+            1040,
+            250,
+            boxstyle="round,pad=0,rounding_size=12",
+            fc="white",
+            ec=GREEN_700,
+            lw=2,
+            ls=(0, (6, 4)),
+        )
+    )
+    ax.text(
+        55,
+        347,
+        "Nó da blockchain local",
+        fontsize=13,
+        fontweight="bold",
+        color=GREEN_900,
+        va="center",
+    )
+    box(
+        ax,
+        55,
+        385,
+        300,
+        150,
+        "API e validação",
+        ["Assinatura e nonce", "Fila de transações", "Log de rejeições"],
+        size=13,
+    )
+    box(
+        ax,
+        400,
+        385,
+        300,
+        150,
+        "Contrato",
+        ["Perfis de acesso", "Ordem das etapas", "Validação de entradas"],
+        fill=GREEN_100,
+        size=13,
+    )
+    box(
+        ax,
+        745,
+        385,
+        300,
+        150,
+        "Cadeia de blocos",
+        ["Hash SHA-256", "Raiz de Merkle", "Prova de trabalho"],
+        size=13,
+    )
+    arrow(ax, [(355, 460), (400, 460)], both=True)
+    arrow(ax, [(700, 460), (745, 460)], both=True)
+    save(fig, "arquitetura-slide.png")
 
 
 def state_machine():
@@ -260,7 +350,7 @@ def state_machine():
         ("confirm_delivery", "Distribuidor designado"),
         ("finalize_lot", "Distribuidor responsável"),
     ]
-    width, gap, top = 170, 62, 130
+    width, gap, top = 192, 40, 130
     xs = [30 + i * (width + gap) for i in range(5)]
     for i, (x, name) in enumerate(zip(xs, names)):
         box(ax, x, top, width, 70, "", [], fill=fills[i], edge=GREEN_700, size=11)
@@ -270,7 +360,7 @@ def state_machine():
             name,
             ha="center",
             va="center",
-            fontsize=11,
+            fontsize=9.5,
             fontweight="bold",
             color=GREEN_900,
         )
@@ -286,7 +376,7 @@ def state_machine():
             color=GREEN_900,
         )
         ax.text(
-            x + width / 2, 80, who, ha="center", va="center", fontsize=8.5, color=MUTED
+            x + width / 2, 80, who, ha="center", va="center", fontsize=9, color=MUTED
         )
         ax.plot(
             [x + width / 2] * 2, [95, top - 2], color=BORDER, lw=1.4, ls=(0, (3, 3))
@@ -383,14 +473,14 @@ def sequence():
     """Life of one operation from the form to the mined block."""
     fig, ax = canvas(1200, 560)
     actors = [
-        ("Pessoa usuária", 110),
-        ("Gateway e carteira", 340),
-        ("Nó", 600),
+        ("Pessoa usuária", 120),
+        ("Gateway e carteira", 360),
+        ("Nó", 610),
         ("Contrato", 850),
-        ("Cadeia", 1090),
+        ("Cadeia", 1085),
     ]
     for name, x in actors:
-        box(ax, x - 85, 15, 170, 40, name, [], fill=GREEN_100, size=10)
+        box(ax, x - 95, 15, 190, 40, name, [], fill=GREEN_100, size=9.5)
         ax.plot([x, x], [55, 540], color=BORDER, lw=1.3, ls=(0, (4, 4)), zorder=0)
     steps = [
         (0, 1, 100, "1  preenche e envia o formulário"),
@@ -410,7 +500,7 @@ def sequence():
         arrow(ax, [(xs[a] + 4 * direction, y), (xs[b] - 4 * direction, y)])
         ax.text(
             (xs[a] + xs[b]) / 2,
-            y - 14,
+            y - 18,
             label,
             ha="center",
             va="center",
@@ -432,8 +522,8 @@ def sequence():
     )
     ax.add_patch(
         FancyBboxPatch(
-            (470, 178),
-            260,
+            (450, 178),
+            300,
             44,
             boxstyle="round,pad=0,rounding_size=6",
             fc="white",
@@ -459,7 +549,7 @@ def sequence():
 
 def main() -> int:
     """Generate every diagram."""
-    for build in (architecture, state_machine, blocks, sequence):
+    for build in (architecture, architecture_slide, state_machine, blocks, sequence):
         build()
     print(f"Diagramas gerados em {OUT}")
     return 0
