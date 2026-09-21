@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="EcoOrigem: rastreabilidade de produtos da bioeconomia amazônica com blockchain local.">
+  <title>EcoOrigem | Rastreabilidade com blockchain</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='img/favicon.png') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ version }}">
+</head>
+<body>
+  <a class="skip-link" href="#main">Ir para o conteúdo principal</a>
+
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="#/painel" aria-label="EcoOrigem, página inicial">
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="EcoOrigem" width="150" height="48">
+        <span class="brand-tagline">Da origem ao consumidor, com transparência e integridade</span>
+      </a>
+      <div class="topbar-tools">
+        <div class="chain-pill" id="chain-pill" role="status" aria-live="polite" data-state="loading">
+          <span class="dot" aria-hidden="true"></span>
+          <span class="chain-pill-text">Conectando à blockchain local</span>
+        </div>
+        <div class="wallet-picker">
+          <label for="wallet-select">Carteira ativa</label>
+          <select id="wallet-select" aria-describedby="wallet-detail"></select>
+          <div id="wallet-detail" class="wallet-detail"></div>
+        </div>
+      </div>
+    </div>
+    <nav class="tabs" aria-label="Seções">
+      <div class="tabs-inner" id="tabs">
+        <a href="#/painel" data-view="painel">Painel</a>
+        <a href="#/registrar" data-view="registrar">Registrar</a>
+        <a href="#/consultar" data-view="consultar">Consultar</a>
+        <a href="#/blockchain" data-view="blockchain">Blockchain</a>
+        <a href="#/permissoes" data-view="permissoes">Permissões</a>
+        <a href="#/rejeicoes" data-view="rejeicoes">Rejeições</a>
+        <a href="#/laboratorio" data-view="laboratorio">Integridade</a>
+      </div>
+    </nav>
+  </header>
+
+  <div id="banner" class="banner-slot"></div>
+
+  <main id="main" class="page" tabindex="-1">
+    <section class="view" id="view-painel" data-view="painel" hidden></section>
+    <section class="view" id="view-registrar" data-view="registrar" hidden></section>
+    <section class="view" id="view-consultar" data-view="consultar" hidden></section>
+    <section class="view" id="view-blockchain" data-view="blockchain" hidden></section>
+    <section class="view" id="view-permissoes" data-view="permissoes" hidden></section>
+    <section class="view" id="view-rejeicoes" data-view="rejeicoes" hidden></section>
+    <section class="view" id="view-laboratorio" data-view="laboratorio" hidden></section>
+  </main>
+
+  <footer class="footer">
+    <span>EcoOrigem {{ version }}</span>
+    <span>Protótipo acadêmico. Blockchain local em Python, sem valor monetário.</span>
+    <span>Oficina de Desenvolvimento de Sistemas III, UEA</span>
+  </footer>
+
+  <dialog id="dialog" aria-labelledby="dialog-title">
+    <div class="dialog-head">
+      <h2 id="dialog-title"></h2>
+      <button type="button" class="icon-btn" id="dialog-close" aria-label="Fechar">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+      </button>
+    </div>
+    <div id="dialog-body" class="dialog-body"></div>
+  </dialog>
+
+  <div id="toasts" class="toasts" aria-live="polite"></div>
+
+  <script type="module" src="{{ url_for('static', filename='js/app.js') }}?v={{ version }}"></script>
+</body>
+</html>
