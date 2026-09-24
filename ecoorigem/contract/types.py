@@ -57,7 +57,6 @@ DEFAULT_PRODUCTS: tuple[str, ...] = (
     "Copaíba",
     "Guaraná",
     "Óleo vegetal",
-    "Artesanato",
 )
 
 
@@ -112,6 +111,8 @@ class Lot:  # pylint: disable=too-many-instance-attributes
     status: LotStatus
     created_at: int
     updated_at: int
+    processor: str | None = None
+    carrier: str | None = None
     recipient: str | None = None
     destination: str | None = None
     documents: list[dict[str, Any]] = field(default_factory=list)
@@ -127,6 +128,8 @@ class Lot:  # pylint: disable=too-many-instance-attributes
             "harvest_date": self.harvest_date,
             "producer": self.producer,
             "custodian": self.custodian,
+            "processor": self.processor,
+            "carrier": self.carrier,
             "recipient": self.recipient,
             "destination": self.destination,
             "status": self.status.value,

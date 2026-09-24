@@ -181,8 +181,15 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
                     name, value, today
                 ),
             },
-            optional={"document_hash": sha256_field},
+            optional={
+                "processor": address_field,
+                "document_hash": sha256_field,
+            },
         )
+        processor = self._resolve_designated_actor(
+            parsed.get("processor"), Role.PROCESSOR
+        )
+
         self._lot_counter += 1
         lot_id = f"LOT-{self._lot_counter:04d}"
         lot = Lot(
@@ -196,6 +203,7 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
             status=LotStatus.REGISTERED,
             created_at=ctx.timestamp,
             updated_at=ctx.timestamp,
+            processor=processor,
         )
         self.lots[lot_id] = lot
         self._attach(lot, ctx, parsed.get("document_hash"), "Documento de origem")
@@ -209,6 +217,7 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
                 "origin": lot.origin,
                 "quantity_kg": lot.quantity_kg,
                 "harvest_date": lot.harvest_date,
+                "processor": lot.processor,
             },
         )
 
@@ -217,17 +226,28 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
         parsed = parse_args(
             args,
             {"lot_id": lot_id_field, "description": note_text},
-            {"document_hash": sha256_field},
+            {
+                "carrier": address_field,
+                "document_hash": sha256_field,
+            },
         )
         lot = self._open_lot(parsed["lot_id"])
         self._require_next(lot, LotStatus.PROCESSED)
+        self._require_designated_actor(lot.processor, ctx, "beneficiador")
+
+        carrier = self._resolve_designated_actor(parsed.get("carrier"), Role.CARRIER)
+        lot.carrier = carrier
+
         self._attach(lot, ctx, parsed.get("document_hash"), "Laudo de beneficiamento")
         self._advance(
             ctx,
             lot,
             LotStatus.PROCESSED,
             "LOT_PROCESSED",
-            {"description": parsed["description"]},
+            {
+                "description": parsed["description"],
+                "carrier": lot.carrier,
+            },
         )
 
     def _start_transport(self, ctx: CallContext, args: dict[str, Any]) -> None:
@@ -242,6 +262,8 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
         )
         lot = self._open_lot(parsed["lot_id"])
         self._require_next(lot, LotStatus.IN_TRANSIT)
+        self._require_designated_actor(lot.carrier, ctx, "transportador")
+
         if Role.DISTRIBUTOR not in self.roles.get(parsed["recipient"], set()):
             raise ContractValidationError(
                 "O destinatário informado não possui o perfil Distribuidor."
@@ -393,6 +415,41 @@ class EcoOrigemContract:  # pylint: disable=too-many-public-methods
             raise AccessDeniedError(
                 f"A carteira não possui o perfil {ROLE_LABELS[role.value]}, "
                 "necessário para esta operação."
+            )
+
+    def _resolve_designated_actor(self, account: str | None, role: Role) -> str:
+        """Validate an explicitly designated actor or infer the only eligible one."""
+        label = ROLE_LABELS[role.value]
+        if account is not None:
+            if role not in self.roles.get(account, set()):
+                raise ContractValidationError(
+                    f"A carteira designada não possui o perfil {label}."
+                )
+            return account
+
+        candidates = sorted(
+            actor for actor, roles in self.roles.items() if role in roles
+        )
+        if len(candidates) == 1:
+            return candidates[0]
+        if not candidates:
+            raise ContractValidationError(
+                f"Não há nenhuma carteira com o perfil {label} disponível."
+            )
+        raise ContractValidationError(
+            f"Há mais de uma carteira com o perfil {label}. "
+            "Informe explicitamente quem será o responsável por esta etapa."
+        )
+
+    @staticmethod
+    def _require_designated_actor(
+        designated: str | None, ctx: CallContext, actor_label: str
+    ) -> None:
+        """Ensure the caller is the actor previously designated for the lot."""
+        if designated != ctx.sender:
+            raise AccessDeniedError(
+                f"Somente o {actor_label} designado para este lote pode executar "
+                "esta operação."
             )
 
     def _open_lot(self, lot_id: str) -> Lot:
