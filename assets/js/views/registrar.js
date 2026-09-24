@@ -14,12 +14,13 @@ const OPERATIONS = [
     id: "register_lot",
     title: "Registrar lote",
     role: "PRODUCER",
-    summary: "Cria o lote e registra a origem do produto.",
+    summary: "Cria o lote, registra sua origem e designa o beneficiador responsável.",
     fields: [
       { name: "product", label: "Produto", type: "product", required: true },
       { name: "origin", label: "Origem (comunidade e município)", type: "text", placeholder: "Comunidade do Rio Negro, Novo Airão", required: true, wide: true },
       { name: "quantity_kg", label: "Quantidade (kg)", type: "number", placeholder: "250", required: true },
       { name: "harvest_date", label: "Data da coleta", type: "date", required: true },
+      { name: "processor", label: "Beneficiador responsável", type: "wallet", walletRole: "PROCESSOR", required: true },
       { name: "document_hash", label: "Documento de origem", type: "document", wide: true },
     ],
   },
@@ -27,10 +28,11 @@ const OPERATIONS = [
     id: "record_processing",
     title: "Registrar beneficiamento",
     role: "PROCESSOR",
-    summary: "Lote CADASTRADO passa para BENEFICIADO.",
+    summary: "O beneficiador designado registra o processamento e indica o transportador responsável.",
     fields: [
       { name: "lot_id", label: "Lote", type: "lot", required: true },
       { name: "description", label: "Descrição do beneficiamento", type: "textarea", placeholder: "Despolpamento, pasteurização e congelamento.", required: true, wide: true },
+      { name: "carrier", label: "Transportador responsável", type: "wallet", walletRole: "CARRIER", required: true },
       { name: "document_hash", label: "Laudo de beneficiamento", type: "document", wide: true },
     ],
   },
@@ -38,10 +40,10 @@ const OPERATIONS = [
     id: "start_transport",
     title: "Iniciar transporte",
     role: "CARRIER",
-    summary: "Lote BENEFICIADO passa para EM_TRANSPORTE e designa o distribuidor.",
+    summary: "O transportador designado inicia o transporte e informa o distribuidor destinatário.",
     fields: [
       { name: "lot_id", label: "Lote", type: "lot", required: true },
-      { name: "recipient", label: "Distribuidor destinatário", type: "wallet", required: true },
+      { name: "recipient", label: "Distribuidor destinatário", type: "wallet", walletRole: "DISTRIBUTOR", required: true },
       { name: "destination", label: "Destino", type: "text", placeholder: "Centro de distribuição, Manaus", required: true, wide: true },
     ],
   },
@@ -111,13 +113,15 @@ function buildControl(field) {
       return { root: label(el), el, get: () => el.value, set: (v) => (el.value = v) };
     }
     case "wallet": {
-      const el = h(
-        "select",
-        { id },
-        state.wallets.map((w) => h("option", { value: w.address }, `${w.name}${w.role_labels.length ? ` (${w.role_labels.join(", ")})` : " (sem perfil)"}`)),
-      );
-      const distributor = state.wallets.find((w) => w.roles.includes("DISTRIBUTOR"));
-      if (distributor) el.value = distributor.address;
+      const wallets = field.walletRole
+        ? state.wallets.filter((w) => w.roles.includes(field.walletRole))
+        : state.wallets;
+
+      const options = wallets.length
+        ? wallets.map((w) => h("option", { value: w.address }, `${w.name}${w.role_labels.length ? ` (${w.role_labels.join(", ")})` : ""}`))
+        : [h("option", { value: "" }, `Nenhuma carteira com perfil ${ROLE_NAME[field.walletRole] || "necessário"}`)];
+
+      const el = h("select", { id }, options);
       return { root: label(el), el, get: () => el.value, set: (v) => (el.value = v) };
     }
     case "lot": {
@@ -399,4 +403,3 @@ export const registrar = {
     renderForm();
   },
 };
-

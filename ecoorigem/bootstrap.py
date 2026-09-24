@@ -110,6 +110,7 @@ def seed_demo_lots(client: NodeClient, keystore: Keystore) -> list[str]:
                 "origin": origin,
                 "quantity_kg": quantity,
                 "harvest_date": today,
+                "processor": processor.address,
             },
         )
         lot_id = receipt["events"][0]["lot_id"]
@@ -121,6 +122,7 @@ def seed_demo_lots(client: NodeClient, keystore: Keystore) -> list[str]:
                 {
                     "lot_id": lot_id,
                     "description": f"Beneficiamento de {product.lower()} concluído.",
+                    "carrier": carrier.address,
                 },
             )
         if stage >= 2:
