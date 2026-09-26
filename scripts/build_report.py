@@ -307,7 +307,7 @@ def body(
     # ------------------------------------------------------------- 1
     h(1, "1 Introdução", page_break=True)
     p(
-        "A bioeconomia amazônica movimenta produtos como açaí, castanha-do-brasil, murumuru, cupuaçu, andiroba, óleos vegetais e artesanato. Entre a comunidade extrativista e o consumidor final, cada lote passa por beneficiamento, transporte e distribuição, e cada etapa fica sob responsabilidade de uma organização diferente. As informações sobre essa trajetória costumam ficar dispersas em planilhas, notas e sistemas isolados, sem garantia de que não foram alteradas depois."
+        "A bioeconomia amazônica movimenta produtos como açaí, castanha-do-brasil, murumuru, cupuaçu, andiroba e óleos vegetais. Entre a comunidade extrativista e o consumidor final, cada lote passa por beneficiamento, transporte e distribuição, e cada etapa fica sob responsabilidade de uma organização diferente. As informações sobre essa trajetória costumam ficar dispersas em planilhas, notas e sistemas isolados, sem garantia de que não foram alteradas depois."
     )
     p(
         "Este relatório apresenta o EcoOrigem, um protótipo de rastreabilidade que registra a trajetória de cada lote em uma blockchain local implementada em Python. O trabalho foi desenvolvido para a disciplina Oficina de Desenvolvimento de Sistemas III e segue a lógica apresentada em aula: bloco com hash SHA-256, encadeamento por hash anterior, prova de trabalho com nonce, validação da cadeia e uma aplicação descentralizada formada por interface, contrato inteligente e blockchain."
@@ -535,12 +535,20 @@ def body(
                 "Conceder e revogar perfis",
                 "É a conta que implantou o contrato",
             ],
-            ["Produtor", "Registrar lote", "Nenhuma"],
-            ["Beneficiador", "Registrar beneficiamento", "Nenhuma"],
+            [
+                "Produtor",
+                "Registrar lote",
+                "Designa o beneficiador do lote",
+            ],
+            [
+                "Beneficiador",
+                "Registrar beneficiamento",
+                "Só o beneficiador designado; designa o transportador",
+            ],
             [
                 "Transportador",
                 "Iniciar transporte",
-                "Deve designar um distribuidor com perfil válido",
+                "Só o transportador designado; designa um distribuidor com perfil válido",
             ],
             [
                 "Distribuidor",
@@ -550,7 +558,7 @@ def body(
             ["Consumidor", "Consultar lotes", "Leitura pública, sem carteira"],
         ],
         [3.2, 5.6, 7.2],
-        caption="o responsável atual pelo lote muda a cada etapa e é o único que pode anexar documentos.",
+        caption="cada etapa designa quem executa a próxima; o responsável atual pelo lote muda a cada etapa e é o único que pode anexar documentos.",
     )
     report.figure(
         DIAGRAMS / "maquina-de-estados.png",
@@ -576,15 +584,15 @@ def body(
             ],
             [
                 "record_processing",
-                "Beneficiador",
+                "Beneficiador designado",
                 "CADASTRADO para BENEFICIADO",
-                "INVALID_TRANSITION, LOT_NOT_FOUND",
+                "Outro beneficiador tenta registrar, INVALID_TRANSITION",
             ],
             [
                 "start_transport",
-                "Transportador",
+                "Transportador designado",
                 "BENEFICIADO para EM_TRANSPORTE",
-                "Destinatário sem perfil de distribuidor",
+                "Outro transportador tenta iniciar, destinatário sem perfil de distribuidor",
             ],
             [
                 "confirm_delivery",
