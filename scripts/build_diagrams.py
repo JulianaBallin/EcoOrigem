@@ -345,8 +345,8 @@ def state_machine():
     fills = ["#e8edf2", AMBER, BLUE, TEAL, "#e3f4e6"]
     ops = [
         ("register_lot", "Produtor"),
-        ("record_processing", "Beneficiador"),
-        ("start_transport", "Transportador"),
+        ("record_processing", "Beneficiador designado"),
+        ("start_transport", "Transportador designado"),
         ("confirm_delivery", "Distribuidor designado"),
         ("finalize_lot", "Distribuidor responsável"),
     ]
