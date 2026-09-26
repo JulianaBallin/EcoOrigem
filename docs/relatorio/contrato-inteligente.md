@@ -14,7 +14,7 @@ possível implantar uma vez por blockchain.
 
 | Argumento | Tipo | Descrição |
 | --- | --- | --- |
-| `allowed_products` | lista de textos, opcional | Produtos aceitos no cadastro. O padrão é açaí, castanha-do-brasil, murumuru, cupuaçu, andiroba, copaíba, guaraná, óleo vegetal e artesanato |
+| `allowed_products` | lista de textos, opcional | Produtos aceitos no cadastro. O padrão é açaí, castanha-do-brasil, murumuru, cupuaçu, andiroba, copaíba, guaraná e óleo vegetal |
 
 ## Perfis
 
@@ -38,9 +38,9 @@ O administrador não é um perfil: é a conta que implantou o contrato.
 | --- | --- | --- | --- |
 | `grant_role` | Administrador | `account`, `role` | Concede o perfil |
 | `revoke_role` | Administrador | `account`, `role` | Revoga o perfil |
-| `register_lot` | Produtor | `product`, `origin`, `quantity_kg`, `harvest_date`, `document_hash` (opcional) | Cria o lote em CADASTRADO |
-| `record_processing` | Beneficiador | `lot_id`, `description`, `document_hash` (opcional) | CADASTRADO para BENEFICIADO |
-| `start_transport` | Transportador | `lot_id`, `recipient`, `destination` | BENEFICIADO para EM_TRANSPORTE. O destinatário precisa ter o perfil Distribuidor |
+| `register_lot` | Produtor | `product`, `origin`, `quantity_kg`, `harvest_date`, `processor` (opcional), `document_hash` (opcional) | Cria o lote em CADASTRADO e designa o beneficiador |
+| `record_processing` | Beneficiador designado | `lot_id`, `description`, `carrier` (opcional), `document_hash` (opcional) | CADASTRADO para BENEFICIADO e designa o transportador |
+| `start_transport` | Transportador designado | `lot_id`, `recipient`, `destination` | BENEFICIADO para EM_TRANSPORTE. O destinatário precisa ter o perfil Distribuidor |
 | `confirm_delivery` | Distribuidor designado | `lot_id`, `note` (opcional) | EM_TRANSPORTE para DISTRIBUIDO |
 | `finalize_lot` | Distribuidor responsável | `lot_id`, `note` (opcional) | DISTRIBUIDO para FINALIZADO |
 | `attach_document` | Responsável atual | `lot_id`, `document_hash`, `description` | Registra o hash de um documento |
@@ -56,13 +56,14 @@ O administrador não é um perfil: é a conta que implantou o contrato.
 | `lot_id` | Formato `LOT-0001` |
 | `document_hash` | 64 caracteres hexadecimais (SHA-256) |
 | `recipient`, `account` | Endereço no formato `0x` seguido de 40 hexadecimais |
+| `processor`, `carrier` | Endereço de uma carteira com o perfil Beneficiador ou Transportador. Se omitido, o contrato usa a única carteira com esse perfil e rejeita quando há mais de uma |
 | Campos extras | Rejeitados |
 
 ## Códigos de erro
 
 | Código | Camada | Significado |
 | --- | --- | --- |
-| `ACCESS_DENIED` | contrato | A carteira não tem o perfil ou não é a responsável |
+| `ACCESS_DENIED` | contrato | A carteira não tem o perfil ou não é a designada ou responsável pelo lote |
 | `INVALID_INPUT` | contrato | Campo ausente, com tipo errado ou fora dos limites |
 | `INVALID_TRANSITION` | contrato | A etapa pula ou repete um passo obrigatório |
 | `LOT_NOT_FOUND` | contrato | O lote não existe |

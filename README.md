@@ -18,7 +18,7 @@
   <img alt="Flask" src="https://img.shields.io/badge/Flask-3.1-000000?style=for-the-badge&logo=flask&logoColor=white" />
   <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
   <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
-  <img alt="Pytest" src="https://img.shields.io/badge/Pytest-248_testes-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" />
+  <img alt="Pytest" src="https://img.shields.io/badge/Pytest-251_testes-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" />
   <img alt="Make" src="https://img.shields.io/badge/Make-menu_interativo-427819?style=for-the-badge&logo=gnu&logoColor=white" />
 </div>
 
@@ -27,7 +27,7 @@
 <h2 align="center">Sobre o projeto</h2>
 
 O **EcoOrigem** registra o ciclo de vida de lotes de açaí, castanha, murumuru,
-cupuaçu, óleos vegetais e artesanato, da coleta ao consumidor. Cada etapa
+cupuaçu e óleos vegetais, da coleta ao consumidor. Cada etapa
 (cadastro, beneficiamento, transporte, recebimento e finalização) vira uma
 transação assinada, validada por um contrato inteligente e gravada em um bloco
 minerado com prova de trabalho.
@@ -83,12 +83,16 @@ O detalhamento das decisões está no [relatório técnico](docs/relatorio/relat
 | Perfil | Operação | Regra |
 | --- | --- | --- |
 | Administrador | Conceder e revogar perfis | É a conta que implantou o contrato |
-| Produtor | `register_lot` | Produto da lista aceita, quantidade positiva, data não futura |
-| Beneficiador | `record_processing` | Somente lote CADASTRADO |
-| Transportador | `start_transport` | Somente lote BENEFICIADO, com distribuidor válido designado |
+| Produtor | `register_lot` | Produto da lista aceita, quantidade positiva, data não futura. Designa o beneficiador do lote |
+| Beneficiador | `record_processing` | Somente lote CADASTRADO e somente o beneficiador designado. Designa o transportador do lote |
+| Transportador | `start_transport` | Somente lote BENEFICIADO e somente o transportador designado, com distribuidor válido designado |
 | Distribuidor | `confirm_delivery` e `finalize_lot` | Só o distribuidor designado confirma e só o responsável atual finaliza |
 | Responsável atual | `attach_document` | Registra o hash de um documento, nunca o arquivo |
 | Qualquer pessoa | Consultas | Leitura pública, sem carteira |
+
+Cada etapa designa quem executa a próxima: o produtor escolhe o beneficiador, o
+beneficiador escolhe o transportador e o transportador escolhe o distribuidor.
+Outra carteira com o mesmo perfil recebe `ACCESS_DENIED`.
 
 Saltar ou repetir etapas retorna `INVALID_TRANSITION`, e qualquer operação sobre
 um lote FINALIZADO retorna `LOT_FINALIZED`. A referência completa está em
@@ -126,7 +130,7 @@ EcoOrigem/
 │   ├── web/                # gateway com carteiras e template da interface
 │   ├── client.py  bootstrap.py  keystore.py  config.py  __main__.py
 ├── scripts/                # cenários, gravação da demo, diagramas, relatório, slides, menu
-├── tests/                  # 248 testes com pytest
+├── tests/                  # 251 testes com pytest
 ├── Dockerfile  docker-compose.yml  Makefile
 └── requirements*.txt  pyproject.toml
 ```
@@ -188,7 +192,7 @@ Variáveis úteis estão em [.env.example](.env.example), como a dificuldade da 
 
 | Verificação | Ferramenta | Resultado |
 | --- | --- | --- |
-| Testes automatizados | pytest | 248 aprovados |
+| Testes automatizados | pytest | 251 aprovados |
 | Cobertura | pytest-cov | 97% |
 | Análise estática | Pylint | 10 de 10 |
 | Formatação | Black | sem pendências |
