@@ -226,7 +226,7 @@ e serve de plano B em caso de falha técnica.
 | Documento | Conteúdo |
 | --- | --- |
 | [Relatório técnico](docs/relatorio/relatorio-tecnico-ecoorigem.pdf) ([docx](docs/relatorio/relatorio-tecnico-ecoorigem.docx)) | Problema, objetivos, justificativa, arquitetura, implementação, testes, limitações e conclusão |
-| [Apresentação](docs/slides/apresentacao-ecoorigem.pdf) ([pptx](docs/slides/apresentacao-ecoorigem.pptx)) | 10 slides da apresentação de 10 minutos e 4 slides de bônus |
+| [Apresentação](docs/slides/apresentacao-ecoorigem.pdf) ([pptx](docs/slides/apresentacao-ecoorigem.pptx)) | 11 slides da apresentação de 10 minutos |
 | [Créditos das fotos](docs/assets/produtos/CREDITOS.md) | Autoria e licença das fotos de produtos usadas nos slides |
 | [Cenários de teste](docs/evidencias/cenarios-de-teste.md) | Operações realizadas, resultados esperados e obtidos |
 | [Contrato inteligente](docs/relatorio/contrato-inteligente.md) | Métodos, argumentos, perfis e códigos de erro |
