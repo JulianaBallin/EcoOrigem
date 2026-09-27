@@ -24,6 +24,7 @@ from ecoorigem.client import NodeClient
 from ecoorigem.config import Settings
 from ecoorigem.errors import EcoOrigemError
 from ecoorigem.keystore import Keystore
+from ecoorigem.logs import configure_logging
 from ecoorigem.node.storage import StorageError
 
 
@@ -46,6 +47,7 @@ def cmd_node(settings: Settings, args: argparse.Namespace) -> int:
         settings = dataclasses.replace(settings, difficulty=args.difficulty)
     if args.manual_mining:
         settings = dataclasses.replace(settings, auto_mine=False)
+    configure_logging()
     node, app = build_node(settings)
     status = node.status()
     _print(
@@ -66,6 +68,7 @@ def cmd_web(settings: Settings, args: argparse.Namespace) -> int:
     """Start the web application."""
     if args.node_url:
         settings = dataclasses.replace(settings, node_url=args.node_url)
+    configure_logging()
     app = build_web(settings)
     _serve(
         app, args.host or settings.web_host, args.port or settings.web_port, "Aplicação"
