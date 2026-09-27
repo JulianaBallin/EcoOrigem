@@ -26,8 +26,14 @@ export const laboratorio = {
     }
     const blockSelect = h("select", { id: "lab-block" }, blocks.map((b) => h("option", { value: b.index }, `Bloco #${b.index} (${b.transactions[0].method})`)));
     if (blocks.length) blockSelect.value = String(blocks[blocks.length - 1].index);
-    const changes = h("textarea", { id: "lab-changes", rows: 3, class: "mono" });
-    changes.value = prettyJson({ quantity_kg: 9999 });
+    const currentArgs = () => blocks.find((b) => b.index === Number(blockSelect.value))?.transactions[0]?.args ?? {};
+    const changes = h("textarea", { id: "lab-changes", rows: 5, class: "mono" });
+    const loadPayload = () => {
+      changes.value = prettyJson(currentArgs());
+      clear(result);
+    };
+    loadPayload();
+    blockSelect.onchange = loadPayload;
     const remine = h("input", { type: "checkbox", id: "lab-remine" });
 
     const call = async (button, fn, busy) => {
@@ -59,7 +65,18 @@ export const laboratorio = {
           { class: "card stack" },
           h("h2", {}, "Simular adulteração"),
           h("label", { class: "field", htmlFor: "lab-block" }, "Bloco a adulterar", blockSelect),
-          h("label", { class: "field", htmlFor: "lab-changes" }, "Campos dos argumentos da transação (JSON)", changes, h("span", { class: "field-hint" }, "Exemplo: troca a quantidade de um lote já registrado.")),
+          h(
+            "label",
+            { class: "field", htmlFor: "lab-changes" },
+            "Argumentos gravados nessa transação (JSON)",
+            changes,
+            h(
+              "span",
+              { class: "field-hint" },
+              "São os valores reais do bloco escolhido. Altere um para simular a fraude. ",
+              h("button", { type: "button", class: "linkish", onclick: loadPayload }, "Restaurar valores originais"),
+            ),
+          ),
           h("label", { class: "row", htmlFor: "lab-remine" }, remine, h("span", {}, "Recalcular raiz de Merkle e refazer a prova de trabalho do bloco (fraude sofisticada)")),
           h("div", { class: "row" }, tamper, validate, restore),
           result,
