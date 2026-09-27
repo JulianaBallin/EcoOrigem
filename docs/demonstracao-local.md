@@ -60,6 +60,6 @@ Nomes entre parênteses seguem o exemplo do professor.
 | Hash anterior (`previousHash`) | Hash do bloco anterior. É o que liga um bloco ao outro. | `0000643f1a71...c40316` |
 | Hash (`hash`) | Impressão digital SHA-256 do bloco. Qualquer mudança nos dados muda o hash. | `0000d112a0a3...5bfdb9` |
 | Nonce (`nonce`) | Número testado até o hash começar com os zeros exigidos. | `90900` |
-| Raiz de Merkle | Resumo único de todas as transações do bloco. | `ebaf7617d48f...cae6e8` |
+| Raiz de Merkle | Hash que resume todas as transações do bloco e entra no hash dele. Com uma transação só, é o próprio hash dela. | `ebaf7617d48f...cae6e8` |
 | Prova de trabalho | Esforço para achar o nonce: tentativas, tempo e zeros exigidos. | `90.901 tentativas em 0,52 s, hash começa com 4 zeros` |
 | Encadeamento (`isBlockChainValid`) | Confirma se o hash anterior bate com o bloco de trás. | `hash anterior confere com o hash do bloco #21` |
