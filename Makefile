@@ -161,7 +161,7 @@ demo: venv ## Sobe a demonstração do zero: limpa dados, inicia nó, contrato, 
 	@$(VENV_PY) -m ecoorigem seed --wait 10
 	@printf "$(C_STEP)[5/5] Verificando a integridade da cadeia$(C_RESET)\n"
 	@$(VENV_PY) -m ecoorigem validate --wait 3 \
-		&& printf "$(C_OK)Demonstração pronta. Abra http://127.0.0.1:5000 e rode make logs em outro terminal.$(C_RESET)\n" \
+		&& printf "$(C_OK)Demonstração pronta. Abra http://127.0.0.1:5000 e rode make logs neste terminal.$(C_RESET)\n" \
 		|| { printf "$(C_BAD)Falha na verificação da cadeia. Veja make logs.$(C_RESET)\n"; exit 1; }
 
 chain: venv ## Lista os blocos (índice, timestamp, dados, hash anterior, hash, nonce) e diz se a cadeia é válida. Use LAST=3 para os últimos

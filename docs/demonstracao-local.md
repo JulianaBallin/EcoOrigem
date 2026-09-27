@@ -2,48 +2,34 @@
 
 ## Antes da apresentação
 
-```bash
-cd entrega-1/EcoOrigem
-make venv                     # ambiente virtual .venv-ecoorigem
-make test                     # testes devem passar
-```
+Entrar na pasta do projeto (`cd entrega-1/EcoOrigem`) e deixar o navegador pronto.
+Não é preciso criar o ambiente virtual à parte: `make demo` já cria o
+`.venv-ecoorigem` sozinho, na primeira vez que rodar.
 
-Deixar dois terminais abertos na pasta do projeto e o navegador pronto.
+Um único terminal basta. Ele roda `make demo` e depois `make logs`, que fica
+mostrando os blocos em tempo real pelo resto da demonstração.
 
 ## Roteiro
 
 | Tempo | Requisito | Ação | Mostrar |
 | --- | --- | --- | --- |
-| 0:00 | Inicialização | Terminal 1: `make demo` | Etapas 1 a 5: limpa dados, inicia o nó, implanta o contrato, concede perfis, cria LOT-0001 a LOT-0005 e verifica a cadeia |
-| 0:20 | Logs ao vivo | Terminal 2: `make logs` | Blocos verdes `BLOCO #N CONFIRMADO` |
-| 0:30 | Blockchain local em execução | Terminal 1: `make chain LAST=2`. Navegador: <http://127.0.0.1:5000>, aba **Painel** | Hash anterior, timestamp, dados, hash e nonce de cada bloco. "Blockchain é válida? Sim" |
-| 1:00 | Operação pela interface | Carteira **Produtor**, aba **Registrar**, **Registrar lote**. Preencher origem e quantidade. **Assinar e enviar à blockchain** | Painel verde na interface. Terminal 2: novo `BLOCO #N CONFIRMADO` com os dados do lote |
-| 2:00 | Consulta e mudança de estado | Carteira **Beneficiador**, **Registrar beneficiamento**, lote `LOT-0006`, descrição, enviar. Aba **Consultar**, `LOT-0006` | CADASTRADO para BENEFICIADO na interface e na linha `Status` do terminal 2 |
-| 2:50 | Operação inválida ou sem permissão | Aba **Registrar**, cenário **Carteira sem permissão**, enviar. Depois **Pular etapas**, enviar | Terminal 2: `OPERAÇÃO REJEITADA` em vermelho com motivo e código. Nenhum bloco novo. Aba **Rejeições** |
-| 3:40 | Fechamento | Terminal 1: `make chain LAST=1` | Último bloco encadeado e "Blockchain é válida? Sim" |
-
-## Cores dos logs
-
-| Título | Cor |
-| --- | --- |
-| `BLOCO #N CONFIRMADO`, `CADEIA RESTAURADA` | Verde |
-| `OPERAÇÃO REJEITADA` | Vermelho |
-| `ADULTERAÇÃO DETECTADA` | Amarelo |
-
-## Se algo falhar
-
-| Falha | Comando |
-| --- | --- |
-| Porta 5000 ou 8545 ocupada | `make stop` ou `make docker-down` |
-| Sem ambiente virtual | `make venv` |
-| Plano B com Docker | `make docker-reset && make docker-up && make docker-seed`, depois `make docker-logs` e `make docker-chain LAST=2` |
-| Interface fora do ar | Abrir `docs/slides/video/demonstracao.webm` |
+| 0:00 | Inicialização | Terminal: `make demo` | Etapas 1 a 5: limpa dados, inicia o nó, implanta o contrato, concede perfis, cria LOT-0001 a LOT-0005 e verifica a cadeia |
+| 0:20 | Logs contínuos | Terminal: `make logs` (deixar rodando até o fim) | A partir daqui, cada ação na interface aparece aqui como um bloco |
+| 0:30 | Blockchain local em execução | Navegador: <http://127.0.0.1:5000>, aba **Painel** | Altura da cadeia, dificuldade e "Cadeia íntegra" |
+| 1:00 | Operação pela interface | Carteira **Produtor**, aba **Registrar**, **Registrar lote**. Preencher origem e quantidade. **Assinar e enviar à blockchain** | Painel verde na interface. No terminal, novo `BLOCO #N CONFIRMADO` com os dados do lote |
+| 2:00 | Consulta e mudança de estado | Carteira **Beneficiador**, **Registrar beneficiamento**, lote `LOT-0006`, descrição, enviar. Aba **Consultar**, `LOT-0006` | CADASTRADO para BENEFICIADO na interface e na linha `Status` do terminal |
+| 2:50 | Operação inválida ou sem permissão | Aba **Registrar**, cenário **Carteira sem permissão**, enviar. Depois **Pular etapas**, enviar | No terminal, `OPERAÇÃO REJEITADA` com motivo e código. Nenhum bloco novo. Aba **Rejeições** |
+| 3:40 | Fechamento | Apontar para o terminal | O último `BLOCO #N CONFIRMADO` já mostra o encadeamento com o bloco anterior |
 
 ## Depois
 
 ```bash
-make stop
+make reset
 ```
+
+Encerra o nó e a interface e apaga a cadeia e as carteiras locais (pede
+confirmação). Para começar uma nova demonstração do zero, basta `make demo`
+de novo.
 
 ## Campos dos blocos
 
