@@ -166,6 +166,11 @@ make app            # terminal 3: inicia a interface
 ```
 
 `make start` faz os três passos em segundo plano e `make stop` os encerra.
+`make demo` recomeça do zero, cria lotes de exemplo e verifica a cadeia. `make logs`
+mostra cada evento da blockchain como um bloco de texto simples: verde para blocos
+confirmados, vermelho para operações rejeitadas e amarelo para adulterações detectadas.
+`make chain` lista os blocos com índice, timestamp, dados, hash anterior, hash e nonce e
+responde se a blockchain é válida. Use `make chain LAST=3` para ver só os últimos.
 
 ### Menu interativo
 
@@ -231,6 +236,7 @@ e serve de plano B em caso de falha técnica.
 | [Cenários de teste](docs/evidencias/cenarios-de-teste.md) | Operações realizadas, resultados esperados e obtidos |
 | [Contrato inteligente](docs/relatorio/contrato-inteligente.md) | Métodos, argumentos, perfis e códigos de erro |
 | [Roteiro](docs/slides/roteiro-apresentacao.md) | Divisão do tempo, checklist da demonstração e plano de contingência |
+| [Demonstração local](docs/demonstracao-local.md) | Comandos e roteiro de 4 minutos da demonstração ao vivo |
 
 ---
 

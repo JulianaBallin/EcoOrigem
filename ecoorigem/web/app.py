@@ -20,6 +20,9 @@ from ecoorigem.client import NodeClient
 from ecoorigem.http_utils import error_response, register_error_handlers
 from ecoorigem.errors import EcoOrigemError
 from ecoorigem.keystore import PROFILE_BY_LABEL, Keystore
+from ecoorigem.logs import get_logger
+
+LOG = get_logger("web")
 
 READ_ROUTES = [
     re.compile(pattern)
@@ -106,7 +109,31 @@ def create_web_app(client: NodeClient, keystore: Keystore) -> Flask:
         method = payload.get("method")
         if not isinstance(method, str) or not isinstance(args, dict):
             return error_response("BAD_REQUEST", "Informe 'method' e 'args'.", 400)
-        receipt = client.send(wallet, method, args)
+        LOG.info(
+            "Carteira %s assinou %s e enviou ao nó.",
+            wallet.label,
+            method,
+            extra={"tone": "info", "label": "ENVIO"},
+        )
+        try:
+            receipt = client.send(wallet, method, args)
+        except EcoOrigemError as error:
+            LOG.warning(
+                "%s de %s recusada: %s %s",
+                method,
+                wallet.label,
+                error.code,
+                error.message,
+                extra={"tone": "bad", "label": "REJEITADA"},
+            )
+            raise
+        LOG.info(
+            "%s de %s confirmada no bloco #%s.",
+            method,
+            wallet.label,
+            receipt.get("block_index"),
+            extra={"tone": "ok", "label": "CONFIRMADA"},
+        )
         return jsonify(receipt), 201
 
     @app.post("/api/deploy")

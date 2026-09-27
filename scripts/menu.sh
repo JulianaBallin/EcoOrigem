@@ -8,6 +8,9 @@ BOLD=$'\033[1m'; GREEN=$'\033[32m'; DIM=$'\033[2m'; RESET=$'\033[0m'
 OPTIONS=(
   "venv|Ambiente|Cria o ambiente virtual .venv-ecoorigem e instala as dependências"
   "shell|Ambiente|Abre um shell com o ambiente virtual ativado"
+  "demo|Execução local|Sobe a demonstração do zero (limpa, inicia, implanta e cria lotes)"
+  "chain|Execução local|Lista os blocos com hash anterior, timestamp, dados, hash e nonce e valida a cadeia"
+  "logs|Execução local|Acompanha os eventos da blockchain em blocos coloridos (Ctrl+C para sair)"
   "start|Execução local|Inicia nó, implanta o contrato e sobe a interface em segundo plano"
   "node|Execução local|1) Inicia somente a blockchain local (terminal dedicado, porta 8545)"
   "deploy|Execução local|2) Implanta o contrato e concede os perfis de demonstração"

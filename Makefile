@@ -10,12 +10,28 @@ RUN_DIR     := $(DATA_DIR)/run
 LOG_DIR     := $(DATA_DIR)/logs
 COMPOSE     ?= docker compose
 export ECOORIGEM_DATA_DIR ?= $(DATA_DIR)
+# Logs coloridos no nó e na interface (use LOG_COLOR=0 ou NO_COLOR=1 para desativar).
+LOG_COLOR   ?= 1
+
+ifdef NO_COLOR
+C_OK :=
+C_BAD :=
+C_STEP :=
+C_DIM :=
+C_RESET :=
+else
+C_OK    := \033[1;32m
+C_BAD   := \033[1;31m
+C_STEP  := \033[1;36m
+C_DIM   := \033[2m
+C_RESET := \033[0m
+endif
 
 .DEFAULT_GOAL := help
 
 .PHONY: report slides diagrams help menu venv install shell test coverage lint format format-check security check scenarios docs-deps demo-video \
-        node deploy app seed accounts status validate start stop reset \
-        docker-build docker-up docker-down docker-logs docker-seed docker-test docker-reset docker-status \
+        node deploy app seed accounts status validate start stop reset demo logs chain \
+        docker-build docker-up docker-down docker-logs docker-chain docker-seed docker-test docker-reset docker-status \
         clean
 
 ## ---------------------------------------------------------------- ajuda
@@ -90,13 +106,13 @@ demo-video: docs-deps ## Grava screenshots e o vídeo de apoio com a stack Docke
 
 ## --------------------------------------------- blockchain local (sem Docker)
 node: venv ## 1) Inicia a blockchain local (porta 8545)
-	$(VENV_PY) -m ecoorigem node
+	ECOORIGEM_LOG_COLOR=$(LOG_COLOR) $(VENV_PY) -m ecoorigem node
 
 deploy: venv ## 2) Implanta o contrato e concede os perfis de demonstração
 	$(VENV_PY) -m ecoorigem deploy --wait 10
 
 app: venv ## 3) Inicia a interface web (http://127.0.0.1:5000)
-	$(VENV_PY) -m ecoorigem web
+	ECOORIGEM_LOG_COLOR=$(LOG_COLOR) $(VENV_PY) -m ecoorigem web
 
 seed: venv ## Cria lotes de demonstração em várias etapas
 	$(VENV_PY) -m ecoorigem seed --wait 10
@@ -115,16 +131,16 @@ start: venv ## Inicia nó, implanta o contrato e sobe a interface em segundo pla
 	@if [ -f $(RUN_DIR)/node.pid ] && kill -0 $$(cat $(RUN_DIR)/node.pid) 2>/dev/null; then \
 		echo "O nó já está em execução."; \
 	else \
-		nohup $(VENV_PY) -m ecoorigem node > $(LOG_DIR)/node.log 2>&1 & echo $$! > $(RUN_DIR)/node.pid; \
+		ECOORIGEM_LOG_COLOR=$(LOG_COLOR) nohup $(VENV_PY) -m ecoorigem node > $(LOG_DIR)/node.log 2>&1 & echo $$! > $(RUN_DIR)/node.pid; \
 	fi
 	@$(VENV_PY) -m ecoorigem deploy --wait 20
 	@if [ -f $(RUN_DIR)/web.pid ] && kill -0 $$(cat $(RUN_DIR)/web.pid) 2>/dev/null; then \
 		echo "A interface já está em execução."; \
 	else \
-		nohup $(VENV_PY) -m ecoorigem web > $(LOG_DIR)/web.log 2>&1 & echo $$! > $(RUN_DIR)/web.pid; \
+		ECOORIGEM_LOG_COLOR=$(LOG_COLOR) nohup $(VENV_PY) -m ecoorigem web > $(LOG_DIR)/web.log 2>&1 & echo $$! > $(RUN_DIR)/web.pid; \
 	fi
 	@sleep 1
-	@echo "Interface: http://127.0.0.1:5000   Nó: http://127.0.0.1:8545   Logs: $(LOG_DIR)/"
+	@printf "$(C_OK)Interface: http://127.0.0.1:5000   Nó: http://127.0.0.1:8545   Logs: make logs$(C_RESET)\n"
 
 stop: ## Encerra o nó e a interface iniciados com make start
 	@for name in web node; do \
@@ -133,6 +149,28 @@ stop: ## Encerra o nó e a interface iniciados com make start
 			rm -f $(RUN_DIR)/$$name.pid; \
 		fi; \
 	done
+
+demo: venv ## Sobe a demonstração do zero: limpa dados, inicia nó, contrato, interface e lotes
+	@printf "$(C_STEP)[1/5] Encerrando execuções anteriores$(C_RESET)\n"
+	@$(MAKE) --no-print-directory stop
+	@printf "$(C_STEP)[2/5] Limpando a cadeia e as carteiras locais$(C_RESET)\n"
+	@$(VENV_PY) -m ecoorigem reset --yes
+	@printf "$(C_STEP)[3/5] Iniciando a blockchain, implantando o contrato e subindo a interface$(C_RESET)\n"
+	@$(MAKE) --no-print-directory start
+	@printf "$(C_STEP)[4/5] Criando lotes de demonstração$(C_RESET)\n"
+	@$(VENV_PY) -m ecoorigem seed --wait 10
+	@printf "$(C_STEP)[5/5] Verificando a integridade da cadeia$(C_RESET)\n"
+	@$(VENV_PY) -m ecoorigem validate --wait 3 \
+		&& printf "$(C_OK)Demonstração pronta. Abra http://127.0.0.1:5000 e rode make logs em outro terminal.$(C_RESET)\n" \
+		|| { printf "$(C_BAD)Falha na verificação da cadeia. Veja make logs.$(C_RESET)\n"; exit 1; }
+
+chain: venv ## Lista os blocos (índice, timestamp, dados, hash anterior, hash, nonce) e diz se a cadeia é válida. Use LAST=3 para os últimos
+	@ECOORIGEM_LOG_COLOR=$(LOG_COLOR) $(VENV_PY) -m ecoorigem chain --wait 3 --last $(or $(LAST),0)
+
+logs: ## Acompanha os eventos da blockchain em blocos coloridos (Ctrl+C para sair)
+	@mkdir -p $(LOG_DIR) && touch $(LOG_DIR)/node.log
+	@printf "$(C_DIM)Verde: bloco confirmado. Vermelho: operação rejeitada. Amarelo: adulteração detectada.$(C_RESET)\n"
+	@tail -n 40 -F $(LOG_DIR)/node.log
 
 reset: venv ## Apaga a cadeia e as carteiras locais (encerre o nó antes)
 	@$(MAKE) --no-print-directory stop
@@ -151,6 +189,9 @@ docker-down: ## Derruba os contêineres (mantém a blockchain nos volumes)
 
 docker-logs: ## Acompanha os logs dos serviços
 	$(COMPOSE) logs -f --tail=100
+
+docker-chain: ## Lista os blocos da stack Docker e diz se a cadeia é válida. Use LAST=3 para os últimos
+	$(COMPOSE) exec node python -m ecoorigem chain --last $(or $(LAST),0)
 
 docker-status: ## Mostra o estado dos contêineres
 	$(COMPOSE) ps

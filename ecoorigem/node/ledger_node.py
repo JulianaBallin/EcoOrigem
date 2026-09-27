@@ -8,6 +8,7 @@ never holds private keys: signing is the job of the wallets.
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from dataclasses import replace
@@ -39,7 +40,11 @@ from ecoorigem.errors import (
     TransactionError,
     WrongContractError,
 )
+from ecoorigem.logs import get_logger, log_event
+from ecoorigem.node import narration
 from ecoorigem.node.storage import LedgerStore
+
+LOG = get_logger("node")
 
 DEFAULT_MAX_CLOCK_SKEW_MS = 5 * 60 * 1000
 MAX_PAGE_SIZE = 200
@@ -209,6 +214,20 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         block: Block | None = None
         if self.auto_mine:
             block = self._mine()
+            log_event(
+                LOG,
+                "ok",
+                narration.confirmed(
+                    self.contract,
+                    tx,
+                    events,
+                    block,
+                    self.chain.blocks[block.index - 1],
+                    self.last_mining,
+                ),
+            )
+        else:
+            log_event(LOG, "info", narration.pending(self.contract, tx))
         return self._receipt(tx, events, block)
 
     def _check_intake(self, tx: Transaction) -> None:
@@ -233,7 +252,15 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         with self._lock:
             if not self.mempool:
                 return None
-            return self._mine()
+            block = self._mine()
+            log_event(
+                LOG,
+                "ok",
+                narration.mined(
+                    block, self.chain.blocks[block.index - 1], self.last_mining
+                ),
+            )
+            return block
 
     def _mine(self) -> Block:
         started = time.perf_counter()
@@ -291,6 +318,18 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         self._rejections.append(entry)
         self._rejections = self._rejections[-500:]
         self.store.append_rejection(entry)
+        log_event(
+            LOG,
+            "bad",
+            narration.rejected(
+                self.contract,
+                entry["sender"],
+                entry["method"],
+                error.code,
+                error.message,
+            ),
+            level=logging.WARNING,
+        )
 
     # ------------------------------------------------------------------
     # Reads
@@ -497,10 +536,18 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
             if remine:
                 block.merkle_root = block.compute_merkle_root()
                 block.mine()
-            return self.validate()
+            report = self.validate()
+            log_event(
+                LOG,
+                "warn",
+                narration.tampered(block_index, report),
+                level=logging.WARNING,
+            )
+            return report
 
     def lab_restore(self) -> ValidationReport:
         """Reload the chain from disk, discarding in-memory tampering."""
         with self._lock:
             self._load()
+            log_event(LOG, "ok", narration.restored(self._integrity))
             return self._integrity
