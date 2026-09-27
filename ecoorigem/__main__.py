@@ -24,7 +24,17 @@ from ecoorigem.client import NodeClient
 from ecoorigem.config import Settings
 from ecoorigem.errors import EcoOrigemError
 from ecoorigem.keystore import Keystore
-from ecoorigem.logs import configure_logging
+from ecoorigem.blockchain.block import Block
+from ecoorigem.logs import (
+    TONES,
+    RESET,
+    ToneFormatter,
+    color_enabled,
+    configure_logging,
+    get_logger,
+    log_event,
+)
+from ecoorigem.node import narration
 from ecoorigem.node.storage import StorageError
 
 
@@ -49,17 +59,8 @@ def cmd_node(settings: Settings, args: argparse.Namespace) -> int:
         settings = dataclasses.replace(settings, auto_mine=False)
     configure_logging()
     node, app = build_node(settings)
-    status = node.status()
-    _print(
-        f"Blockchain local iniciada: {status['height']} bloco(s), "
-        f"dificuldade {status['difficulty']}, mineração "
-        f"{'automática' if node.auto_mine else 'manual'}."
-    )
-    if not status["integrity"]["valid"]:
-        _print(
-            "ATENÇÃO: a verificação de integridade falhou. "
-            "Operações de escrita bloqueadas."
-        )
+    mode = "automática, um bloco por operação" if node.auto_mine else "manual"
+    log_event(get_logger("node"), "ok", narration.started(node.status(), mode))
     _serve(app, args.host or settings.node_host, args.port or settings.node_port, "Nó")
     return 0
 
@@ -141,6 +142,43 @@ def cmd_validate(settings: Settings, args: argparse.Namespace) -> int:
     return 2
 
 
+def _all_blocks(client: NodeClient) -> list[Block]:
+    blocks: list[Block] = []
+    while True:
+        page = client.request(
+            "GET",
+            "/blocks",
+            params={"order": "asc", "offset": len(blocks), "limit": 200},
+        )
+        blocks.extend(Block.from_dict(raw) for raw in page["blocks"])
+        if not page["blocks"] or len(blocks) >= page["total"]:
+            return blocks
+
+
+def cmd_chain(settings: Settings, args: argparse.Namespace) -> int:
+    """Print the blocks with their classic fields and whether the chain is valid."""
+    client = _client(settings, args.wait)
+    blocks = _all_blocks(client)
+    formatter = ToneFormatter(color_enabled(sys.stdout))
+    first = max(0, len(blocks) - args.last) if args.last else 0
+    for block in blocks[first:]:
+        previous = blocks[block.index - 1] if block.index else None
+        title = f"BLOCO #{block.index}" + (" (GÊNESIS)" if not block.index else "")
+        details = narration.block_fields(block)
+        details.append(("Encadeamento", narration.link(block, previous)))
+        _print(formatter.render("", "ok", title, details).lstrip() + "\n")
+    report = client.request("GET", "/validate")
+    paint = color_enabled(sys.stdout)
+    if report["valid"]:
+        answer = f"Sim ({report['checked_blocks']} blocos verificados)"
+        tone = TONES["ok"]
+    else:
+        answer = f"Não, a partir do bloco #{report['first_invalid_block']}"
+        tone = TONES["bad"]
+    _print("Blockchain é válida? " + (f"{tone}{answer}{RESET}" if paint else answer))
+    return 0 if report["valid"] else 2
+
+
 def cmd_reset(settings: Settings, args: argparse.Namespace) -> int:
     """Delete the local chain and wallets. The node must be stopped."""
     targets = [settings.node_dir, settings.keystore_path.parent]
@@ -203,6 +241,15 @@ def build_parser() -> argparse.ArgumentParser:
     validate = sub.add_parser("validate", help="verifica a integridade da cadeia")
     validate.add_argument("--wait", type=float, default=0)
     validate.set_defaults(handler=cmd_validate)
+
+    chain = sub.add_parser(
+        "chain", help="lista os blocos e informa se a blockchain é válida"
+    )
+    chain.add_argument("--wait", type=float, default=0)
+    chain.add_argument(
+        "--last", type=int, default=0, help="mostra só os últimos N blocos"
+    )
+    chain.set_defaults(handler=cmd_chain)
 
     reset = sub.add_parser("reset", help="apaga cadeia e carteiras locais")
     reset.add_argument("--yes", action="store_true", help="não pedir confirmação")

@@ -30,8 +30,8 @@ endif
 .DEFAULT_GOAL := help
 
 .PHONY: report slides diagrams help menu venv install shell test coverage lint format format-check security check scenarios docs-deps demo-video \
-        node deploy app seed accounts status validate start stop reset demo logs \
-        docker-build docker-up docker-down docker-logs docker-seed docker-test docker-reset docker-status \
+        node deploy app seed accounts status validate start stop reset demo logs chain \
+        docker-build docker-up docker-down docker-logs docker-chain docker-seed docker-test docker-reset docker-status \
         clean
 
 ## ---------------------------------------------------------------- ajuda
@@ -164,10 +164,13 @@ demo: venv ## Sobe a demonstração do zero: limpa dados, inicia nó, contrato, 
 		&& printf "$(C_OK)Demonstração pronta. Abra http://127.0.0.1:5000 e rode make logs em outro terminal.$(C_RESET)\n" \
 		|| { printf "$(C_BAD)Falha na verificação da cadeia. Veja make logs.$(C_RESET)\n"; exit 1; }
 
-logs: ## Acompanha os logs coloridos do nó e da interface (Ctrl+C para sair)
-	@mkdir -p $(LOG_DIR) && touch $(LOG_DIR)/node.log $(LOG_DIR)/web.log
-	@printf "$(C_DIM)Verde: bloco confirmado. Vermelho: operação rejeitada. Amarelo: alerta de integridade.$(C_RESET)\n"
-	@tail -n 20 -F $(LOG_DIR)/node.log $(LOG_DIR)/web.log
+chain: venv ## Lista os blocos (índice, timestamp, dados, hash anterior, hash, nonce) e diz se a cadeia é válida. Use LAST=3 para os últimos
+	@ECOORIGEM_LOG_COLOR=$(LOG_COLOR) $(VENV_PY) -m ecoorigem chain --wait 3 --last $(or $(LAST),0)
+
+logs: ## Acompanha os eventos da blockchain em blocos coloridos (Ctrl+C para sair)
+	@mkdir -p $(LOG_DIR) && touch $(LOG_DIR)/node.log
+	@printf "$(C_DIM)Verde: bloco confirmado. Vermelho: operação rejeitada. Amarelo: adulteração detectada.$(C_RESET)\n"
+	@tail -n 40 -F $(LOG_DIR)/node.log
 
 reset: venv ## Apaga a cadeia e as carteiras locais (encerre o nó antes)
 	@$(MAKE) --no-print-directory stop
@@ -186,6 +189,9 @@ docker-down: ## Derruba os contêineres (mantém a blockchain nos volumes)
 
 docker-logs: ## Acompanha os logs dos serviços
 	$(COMPOSE) logs -f --tail=100
+
+docker-chain: ## Lista os blocos da stack Docker e diz se a cadeia é válida. Use LAST=3 para os últimos
+	$(COMPOSE) exec node python -m ecoorigem chain --last $(or $(LAST),0)
 
 docker-status: ## Mostra o estado dos contêineres
 	$(COMPOSE) ps

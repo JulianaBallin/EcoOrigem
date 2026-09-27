@@ -80,6 +80,16 @@ def test_cli_full_journey(capsys):
     assert main(["validate"]) == 0
     assert "íntegra" in capsys.readouterr().out
 
+    assert main(["chain", "--last", "2"]) == 0
+    out = capsys.readouterr().out
+    for field in ("Hash anterior", "Timestamp", "Dados", "Hash", "Nonce"):
+        assert field in out
+    assert out.count("BLOCO #") == 2
+    assert "Blockchain é válida? Sim" in out
+
+    assert main(["chain"]) == 0
+    assert "BLOCO #0 (GÊNESIS)" in capsys.readouterr().out
+
 
 def test_cli_validate_reports_tampering(live, capsys):
     assert main(["deploy", "--wait", "5", "--no-roles"]) == 0
@@ -99,6 +109,8 @@ def test_cli_validate_reports_tampering(live, capsys):
     assert main(["validate"]) == 2
     out = capsys.readouterr().out
     assert "INVÁLIDA" in out and "MERKLE_MISMATCH" in out
+    assert main(["chain", "--last", "1"]) == 2
+    assert "Blockchain é válida? Não, a partir do bloco #2" in capsys.readouterr().out
 
 
 def test_cli_reports_unreachable_node(monkeypatch, tmp_path, capsys):
