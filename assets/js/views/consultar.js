@@ -123,6 +123,8 @@ function renderLot(lot) {
         h("dd", {}, lot.harvest_date.split("-").reverse().join("/")),
         h("dt", {}, "Produtor"),
         h("dd", {}, addressLabel(lot.producer)),
+        lot.processor ? [h("dt", {}, "Beneficiador designado"), h("dd", {}, addressLabel(lot.processor))] : null,
+        lot.carrier ? [h("dt", {}, "Transportador designado"), h("dd", {}, addressLabel(lot.carrier))] : null,
         h("dt", {}, "Responsável atual"),
         h("dd", {}, addressLabel(lot.custodian)),
         lot.recipient ? [h("dt", {}, "Distribuidor designado"), h("dd", {}, addressLabel(lot.recipient)), h("dt", {}, "Destino"), h("dd", {}, lot.destination)] : null,
