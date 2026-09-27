@@ -8,6 +8,7 @@ never holds private keys: signing is the job of the wallets.
 
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from dataclasses import replace
@@ -39,7 +40,8 @@ from ecoorigem.errors import (
     TransactionError,
     WrongContractError,
 )
-from ecoorigem.logs import get_logger
+from ecoorigem.logs import get_logger, log_event
+from ecoorigem.node import narration
 from ecoorigem.node.storage import LedgerStore
 
 LOG = get_logger("node")
@@ -212,6 +214,20 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         block: Block | None = None
         if self.auto_mine:
             block = self._mine()
+            log_event(
+                LOG,
+                "ok",
+                narration.confirmed(
+                    self.contract,
+                    tx,
+                    events,
+                    block,
+                    self.chain.blocks[block.index - 1],
+                    self.last_mining,
+                ),
+            )
+        else:
+            log_event(LOG, "info", narration.pending(self.contract, tx))
         return self._receipt(tx, events, block)
 
     def _check_intake(self, tx: Transaction) -> None:
@@ -236,7 +252,15 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         with self._lock:
             if not self.mempool:
                 return None
-            return self._mine()
+            block = self._mine()
+            log_event(
+                LOG,
+                "ok",
+                narration.mined(
+                    block, self.chain.blocks[block.index - 1], self.last_mining
+                ),
+            )
+            return block
 
     def _mine(self) -> Block:
         started = time.perf_counter()
@@ -262,15 +286,6 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
             "seconds": round(time.perf_counter() - started, 4),
             "difficulty": block.difficulty,
         }
-        LOG.info(
-            "Bloco #%d minerado com %s: %d tentativas de nonce em %.2f s, hash %s...",
-            block.index,
-            ", ".join(_describe(tx) for tx in block.transactions),
-            attempts,
-            self.last_mining["seconds"],
-            block.hash[:16],
-            extra={"tone": "ok", "label": "BLOCO"},
-        )
         return block
 
     def _receipt(
@@ -303,13 +318,17 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         self._rejections.append(entry)
         self._rejections = self._rejections[-500:]
         self.store.append_rejection(entry)
-        LOG.warning(
-            "%s em %s por %s: %s Nenhum bloco criado.",
-            error.code,
-            entry["method"] or "operação",
-            _short(entry["sender"]),
-            error.message,
-            extra={"tone": "bad", "label": "REJEITADA"},
+        log_event(
+            LOG,
+            "bad",
+            narration.rejected(
+                self.contract,
+                entry["sender"],
+                entry["method"],
+                error.code,
+                error.message,
+            ),
+            level=logging.WARNING,
         )
 
     # ------------------------------------------------------------------
@@ -518,12 +537,11 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
                 block.merkle_root = block.compute_merkle_root()
                 block.mine()
             report = self.validate()
-            LOG.warning(
-                "Bloco #%d adulterado em memória. Integridade: %s. "
-                "Escritas bloqueadas.",
-                block_index,
-                "válida" if report.valid else "FALHOU",
-                extra={"tone": "warn", "label": "INTEGRIDADE"},
+            log_event(
+                LOG,
+                "warn",
+                narration.tampered(block_index, report),
+                level=logging.WARNING,
             )
             return report
 
@@ -531,21 +549,5 @@ class LedgerNode:  # pylint: disable=too-many-instance-attributes,too-many-publi
         """Reload the chain from disk, discarding in-memory tampering."""
         with self._lock:
             self._load()
-            LOG.info(
-                "Cadeia restaurada da cópia em disco. Integridade: %s.",
-                "válida" if self._integrity.valid else "FALHOU",
-                extra={"tone": "ok", "label": "INTEGRIDADE"},
-            )
+            log_event(LOG, "ok", narration.restored(self._integrity))
             return self._integrity
-
-
-def _short(address: str | None) -> str:
-    """Abbreviate an address for log lines."""
-    if not address:
-        return "remetente desconhecido"
-    return f"{address[:6]}...{address[-4:]}"
-
-
-def _describe(tx: Transaction) -> str:
-    """Summarize a transaction as ``method (sender)`` for log lines."""
-    return f"{tx.method} ({_short(tx.sender)})"
