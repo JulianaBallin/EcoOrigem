@@ -1,14 +1,5 @@
 # Demonstração local (4 min)
 
-## Antes da apresentação
-
-Entrar na pasta do projeto (`cd entrega-1/EcoOrigem`) e deixar o navegador pronto.
-Não é preciso criar o ambiente virtual à parte: `make demo` já cria o
-`.venv-ecoorigem` sozinho, na primeira vez que rodar.
-
-Um único terminal basta. Ele roda `make demo` e depois `make logs`, que fica
-mostrando os blocos em tempo real pelo resto da demonstração.
-
 ## Roteiro
 
 | Tempo | Requisito | Ação | Mostrar |
@@ -20,6 +11,18 @@ mostrando os blocos em tempo real pelo resto da demonstração.
 | 2:00 | Consulta e mudança de estado | Carteira **Beneficiador**, **Registrar beneficiamento**, lote `LOT-0006`, descrição, enviar. Aba **Consultar**, `LOT-0006` | CADASTRADO para BENEFICIADO na interface e na linha `Status` do terminal |
 | 2:50 | Operação inválida ou sem permissão | Aba **Registrar**, cenário **Carteira sem permissão**, enviar. Depois **Pular etapas**, enviar | No terminal, `OPERAÇÃO REJEITADA` com motivo e código. Nenhum bloco novo. Aba **Rejeições** |
 | 3:40 | Fechamento | Apontar para o terminal | O último `BLOCO #N CONFIRMADO` já mostra o encadeamento com o bloco anterior |
+
+## Extra: integridade da cadeia corrompida (opcional)
+
+Não é um dos quatro itens pedidos pelo professor, mas mostra a imutabilidade
+na prática. Cabe em uns 30 segundos, se sobrar tempo. A alteração acontece só
+em memória, então pode repetir quantas vezes quiser sem afetar a cadeia real.
+
+| Ação | Mostrar |
+| --- | --- |
+| Aba **Integridade**, deixar bloco e campos padrão, **Adulterar dado gravado** | Selo no topo muda para "Cadeia adulterada no bloco N". A própria aba mostra "Adulteração detectada a partir do bloco N" com o motivo (raiz de Merkle e assinatura não conferem). No terminal, `ADULTERAÇÃO DETECTADA` |
+| Trocar de aba, por exemplo **Registrar** | Faixa vermelha no topo: "Integridade comprometida. Novas operações estão bloqueadas." Qualquer envio é recusado com `CHAIN_COMPROMISED` |
+| Aba **Integridade**, **Restaurar da cópia em disco** | Selo volta a "Blockchain local ativa" e a aba mostra "Cadeia íntegra" de novo. No terminal, `CADEIA RESTAURADA` |
 
 ## Depois
 
