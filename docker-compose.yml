@@ -1,0 +1,76 @@
+# Local stack: blockchain node -> contract deployment -> web interface.
+name: ecoorigem
+
+x-app: &app
+  build:
+    context: .
+    target: runtime
+  image: ecoorigem:latest
+  environment: &env
+    ECOORIGEM_DATA_DIR: /data
+    ECOORIGEM_DIFFICULTY: ${ECOORIGEM_DIFFICULTY:-4}
+    ECOORIGEM_NODE_URL: http://node:8545
+    ECOORIGEM_DEMO_SEED: ${ECOORIGEM_DEMO_SEED:-}
+
+services:
+  node:
+    <<: *app
+    container_name: ecoorigem-node
+    command: ["python", "-m", "ecoorigem", "node", "--host", "0.0.0.0", "--port", "8545"]
+    ports:
+      - "127.0.0.1:8545:8545"
+    volumes:
+      - node-data:/data/node
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:8545/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 12
+    restart: unless-stopped
+
+  deploy:
+    <<: *app
+    container_name: ecoorigem-deploy
+    command: ["python", "-m", "ecoorigem", "deploy", "--wait", "60"]
+    volumes:
+      - wallet-data:/data/wallet
+    depends_on:
+      node:
+        condition: service_healthy
+    restart: "no"
+
+  web:
+    <<: *app
+    container_name: ecoorigem-web
+    command: ["python", "-m", "ecoorigem", "web", "--host", "0.0.0.0", "--port", "5000"]
+    ports:
+      - "127.0.0.1:5000:5000"
+    volumes:
+      - wallet-data:/data/wallet
+    depends_on:
+      deploy:
+        condition: service_completed_successfully
+    restart: unless-stopped
+
+  seed:
+    <<: *app
+    container_name: ecoorigem-seed
+    profiles: ["seed"]
+    command: ["python", "-m", "ecoorigem", "seed", "--wait", "30"]
+    volumes:
+      - wallet-data:/data/wallet
+    depends_on:
+      node:
+        condition: service_healthy
+
+  tests:
+    build:
+      context: .
+      target: test
+    image: ecoorigem-tests:latest
+    container_name: ecoorigem-tests
+    profiles: ["test"]
+
+volumes:
+  node-data:
+  wallet-data:
