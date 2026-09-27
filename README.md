@@ -167,8 +167,10 @@ make app            # terminal 3: inicia a interface
 
 `make start` faz os três passos em segundo plano e `make stop` os encerra.
 `make demo` recomeça do zero, cria lotes de exemplo e verifica a cadeia. `make logs`
-acompanha os logs coloridos: verde para blocos, vermelho para rejeições e amarelo para
-alertas de integridade.
+mostra cada evento da blockchain como um bloco de texto simples: verde para blocos
+confirmados, vermelho para operações rejeitadas e amarelo para adulterações detectadas.
+`make chain` lista os blocos com índice, timestamp, dados, hash anterior, hash e nonce e
+responde se a blockchain é válida. Use `make chain LAST=3` para ver só os últimos.
 
 ### Menu interativo
 
