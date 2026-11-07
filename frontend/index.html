@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="EcoOrigem: rastreabilidade de produtos da bioeconomia amazônica na Ethereum Sepolia.">
+    <meta name="theme-color" content="#0b3d24">
+    <title>EcoOrigem | Rastreabilidade na Ethereum</title>
+    <link rel="icon" type="image/png" href="assets/favicon.png">
+    <link rel="stylesheet" href="style.css">
+    <script
+      src="https://cdn.jsdelivr.net/npm/web3@4.0.3/dist/web3.min.js"
+      integrity="sha384-/rnEp+xI/XCIM1gOUXDUCBSVKUx0Fc+WzvIsdbJYcEkMCcyzeKn5FJwNrwc314pV"
+      crossorigin="anonymous"
+      defer
+    ></script>
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Ir para o conteúdo</a>
+
+    <header class="topbar">
+      <a class="brand" href="#visao-geral" aria-label="EcoOrigem, início">
+        <img src="assets/logo.png" alt="EcoOrigem" width="164" height="52">
+        <span>Rastreabilidade pública na Sepolia</span>
+      </a>
+      <div class="connection-tools">
+        <button id="network-button" class="network-pill" type="button" data-state="offline">
+          <span class="status-dot" aria-hidden="true"></span>
+          <span id="network-label">MetaMask desconectada</span>
+        </button>
+        <button id="connect-button" class="button primary" type="button">Conectar e autenticar</button>
+      </div>
+    </header>
+
+    <div id="system-banner" class="system-banner" role="status" aria-live="polite" hidden></div>
+
+    <main id="main">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <span class="eyebrow">BIOECONOMIA AMAZÔNICA + ETHEREUM</span>
+          <h1 id="hero-title">A origem de cada lote, confirmada por quem participou.</h1>
+          <p>
+            Produtores, beneficiadores, transportadores e distribuidores registram cada etapa em um
+            contrato inteligente público. O histórico pode ser consultado por qualquer pessoa.
+          </p>
+          <div class="hero-actions">
+            <button class="button primary" type="button" data-go="registrar">Cadastrar lote</button>
+            <button class="button ghost" type="button" data-go="lotes">Consultar rastreabilidade</button>
+          </div>
+          <div class="trust-row" aria-label="Características da solução">
+            <span>Ethereum Sepolia</span>
+            <span>Assinatura MetaMask</span>
+            <span>Provas por hash e IPFS</span>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="Fluxo do lote">
+          <div class="orb orb-one"></div>
+          <div class="orb orb-two"></div>
+          <article class="trace-card trace-main">
+            <div class="trace-head">
+              <span class="trace-icon" aria-hidden="true">EO</span>
+              <div>
+                <strong>Lote verificável</strong>
+                <small>Registro público e imutável</small>
+              </div>
+              <span class="live-dot">Sepolia</span>
+            </div>
+            <ol class="mini-pipeline">
+              <li class="done"><span>1</span>Origem</li>
+              <li class="done"><span>2</span>Beneficiamento</li>
+              <li class="active"><span>3</span>Transporte</li>
+              <li><span>4</span>Distribuição</li>
+            </ol>
+            <div class="trace-proof">
+              <span>Documento de origem</span>
+              <code>SHA-256 verificado</code>
+            </div>
+          </article>
+          <article class="float-card float-wallet">
+            <span class="float-label">Carteira autenticada</span>
+            <strong>Perfil on-chain</strong>
+          </article>
+          <article class="float-card float-event">
+            <span class="event-check" aria-hidden="true">✓</span>
+            <div><strong>Evento confirmado</strong><small>Registro permanente</small></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="session-strip" aria-label="Sessão Web3">
+        <div>
+          <span class="meta-label">Carteira</span>
+          <strong id="account-value">Não conectada</strong>
+        </div>
+        <div>
+          <span class="meta-label">Perfil autenticado</span>
+          <strong id="roles-value">Conecte a MetaMask</strong>
+        </div>
+        <div>
+          <span class="meta-label">Saldo</span>
+          <strong id="balance-value">-</strong>
+        </div>
+        <div>
+          <span class="meta-label">Contrato</span>
+          <a id="contract-link" href="https://sepolia.etherscan.io" target="_blank" rel="noreferrer">Não configurado</a>
+        </div>
+      </section>
+
+      <nav class="section-tabs" aria-label="Seções da aplicação">
+        <button class="tab active" type="button" data-tab="visao-geral">Visão geral</button>
+        <button class="tab" type="button" data-tab="lotes">Lotes</button>
+        <button class="tab" type="button" data-tab="registrar">Cadastrar lote</button>
+        <button class="tab" type="button" data-tab="operacoes">Operações</button>
+        <button class="tab" type="button" data-tab="documentos">Documentos</button>
+        <button class="tab" type="button" data-tab="eventos">Eventos</button>
+        <button class="tab admin-tab" type="button" data-tab="administracao" hidden>Administração</button>
+      </nav>
+
+      <div class="workspace">
+        <section id="visao-geral" class="panel active" aria-labelledby="overview-title">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">ESTADO DO CONTRATO</span>
+              <h2 id="overview-title">Visão geral da cadeia</h2>
+            </div>
+            <button class="button secondary refresh-button" type="button">Atualizar dados</button>
+          </div>
+          <div class="kpi-grid">
+            <article class="kpi-card green"><span>Lotes registrados</span><strong id="total-lots">0</strong><small>desde a implantação</small></article>
+            <article class="kpi-card"><span>Contrato</span><strong id="pause-state">-</strong><small>estado operacional</small></article>
+            <article class="kpi-card"><span>Taxa de cadastro</span><strong id="registration-fee">-</strong><small>SepoliaETH</small></article>
+            <article class="kpi-card"><span>Taxas acumuladas</span><strong id="contract-balance">-</strong><small>disponíveis à tesouraria</small></article>
+          </div>
+
+          <div class="overview-grid">
+            <article class="content-card lifecycle-card">
+              <div class="card-heading"><div><span class="eyebrow">MÁQUINA DE ESTADOS</span><h3>Jornada obrigatória do lote</h3></div></div>
+              <ol class="lifecycle">
+                <li><span>01</span><div><strong>Cadastrado</strong><small>Produtor designa beneficiador</small></div></li>
+                <li><span>02</span><div><strong>Beneficiado</strong><small>Beneficiador designa transportador</small></div></li>
+                <li><span>03</span><div><strong>Em transporte</strong><small>Transportador designa distribuidor</small></div></li>
+                <li><span>04</span><div><strong>Distribuído</strong><small>Distribuidor confirma o recebimento</small></div></li>
+                <li><span>05</span><div><strong>Finalizado</strong><small>Histórico encerrado</small></div></li>
+              </ol>
+            </article>
+            <article class="content-card auth-card">
+              <div class="card-heading"><div><span class="eyebrow">IDENTIDADE</span><h3>Autenticação sem senha exposta</h3></div></div>
+              <p>A MetaMask assina um desafio único. A assinatura prova o controle da carteira e o contrato consulta os perfis concedidos a esse endereço.</p>
+              <div class="auth-proof" id="auth-proof" data-state="offline">
+                <span class="proof-mark" aria-hidden="true">ID</span>
+                <div><strong id="auth-title">Sessão não autenticada</strong><small id="auth-detail">Conecte a carteira para assinar o desafio.</small></div>
+              </div>
+              <button id="authenticate-button" class="button secondary full" type="button">Autenticar carteira</button>
+            </article>
+          </div>
+        </section>
+
+        <section id="lotes" class="panel" aria-labelledby="lots-title" hidden>
+          <div class="section-heading">
+            <div><span class="eyebrow">CONSULTA PÚBLICA</span><h2 id="lots-title">Lotes registrados</h2></div>
+            <button class="button secondary refresh-button" type="button">Atualizar lotes</button>
+          </div>
+          <article class="content-card">
+            <div class="table-toolbar">
+              <label class="search-field"><span>Buscar</span><input id="lot-search" type="search" placeholder="Produto, origem, endereço ou ID"></label>
+              <span id="lots-count" class="result-count">0 resultados</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>ID</th><th>Produto</th><th>Origem</th><th>Quantidade</th><th>Estado</th><th>Atualizado</th><th></th></tr></thead>
+                <tbody id="lots-body"><tr><td colspan="7" class="empty-state">Conecte a carteira para consultar o contrato.</td></tr></tbody>
+              </table>
+            </div>
+          </article>
+          <article id="lot-detail" class="content-card lot-detail" hidden></article>
+        </section>
+
+        <section id="registrar" class="panel" aria-labelledby="register-title" hidden>
+          <div class="section-heading"><div><span class="eyebrow">PRODUTOR</span><h2 id="register-title">Cadastrar novo lote</h2><p>O cadastro envia a taxa definida pelo contrato e designa o beneficiador responsável.</p></div></div>
+          <form id="register-form" class="content-card form-card">
+            <div class="form-grid">
+              <label><span>Produto</span><select name="product" required><option value="">Selecione</option><option>Açaí</option><option>Castanha-do-Brasil</option><option>Cupuaçu</option><option>Murumuru</option><option>Andiroba</option><option>Copaíba</option><option>Guaraná</option><option>Óleo vegetal</option></select></label>
+              <label><span>Origem</span><input name="origin" minlength="3" maxlength="120" placeholder="Comunidade, município e estado" required></label>
+              <label><span>Quantidade em kg</span><input name="quantity" type="number" min="0.001" max="100000" step="0.001" placeholder="Ex.: 250,5" required></label>
+              <label><span>Data da coleta</span><input name="harvestDate" type="date" required></label>
+              <label class="wide"><span>Carteira do beneficiador</span><input name="processor" class="mono" placeholder="0x..." required></label>
+            </div>
+            <div class="form-note"><strong>Taxa on-chain:</strong> <span id="form-fee">carregando</span>. Depois do cadastro, use a seção Documentos para registrar o SHA-256 e a referência IPFS.</div>
+            <button class="button primary" type="submit">Revisar e cadastrar lote</button>
+          </form>
+        </section>
+
+        <section id="operacoes" class="panel" aria-labelledby="operations-title" hidden>
+          <div class="section-heading"><div><span class="eyebrow">CUSTÓDIA E ESTADOS</span><h2 id="operations-title">Avançar o ciclo do lote</h2><p>O contrato aceita apenas a carteira designada e a próxima etapa prevista.</p></div></div>
+          <div class="operation-grid">
+            <form id="processing-form" class="content-card compact-form">
+              <span class="step-number">01</span><h3>Registrar beneficiamento</h3><p>Perfil Beneficiador designado.</p>
+              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Descrição</span><textarea name="description" minlength="3" maxlength="160" required></textarea></label>
+              <label><span>Carteira do transportador</span><input name="carrier" class="mono" placeholder="0x..." required></label>
+              <label><span>Laudo <small>opcional</small></span><input name="document" type="file"></label>
+              <label><span>CID no IPFS <small>opcional</small></span><input name="ipfsUri" placeholder="ipfs://..."></label>
+              <button class="button primary full" type="submit">Registrar beneficiamento</button>
+            </form>
+            <form id="transport-form" class="content-card compact-form">
+              <span class="step-number">02</span><h3>Iniciar transporte</h3><p>Perfil Transportador designado.</p>
+              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Carteira do distribuidor</span><input name="distributor" class="mono" placeholder="0x..." required></label>
+              <label><span>Destino</span><input name="destination" minlength="3" maxlength="120" required></label>
+              <label><span>Temperatura em °C</span><input name="temperature" type="number" min="-30" max="60" step="0.001" value="24" required></label>
+              <button class="button primary full" type="submit">Iniciar transporte</button>
+            </form>
+            <form id="delivery-form" class="content-card compact-form">
+              <span class="step-number">03</span><h3>Confirmar recebimento</h3><p>Perfil Distribuidor designado.</p>
+              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Observação <small>opcional</small></span><textarea name="note" maxlength="160"></textarea></label>
+              <button class="button primary full" type="submit">Confirmar recebimento</button>
+            </form>
+            <form id="finalize-form" class="content-card compact-form">
+              <span class="step-number">04</span><h3>Finalizar lote</h3><p>Encerra definitivamente o histórico.</p>
+              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Observação <small>opcional</small></span><textarea name="note" maxlength="160"></textarea></label>
+              <button class="button primary full" type="submit">Finalizar lote</button>
+            </form>
+          </div>
+        </section>
+
+        <section id="documentos" class="panel" aria-labelledby="documents-title" hidden>
+          <div class="section-heading"><div><span class="eyebrow">INTEGRIDADE + IPFS</span><h2 id="documents-title">Anexar prova de documento</h2><p>O arquivo não vai para a blockchain. O navegador calcula o SHA-256 e registra apenas a prova e a referência IPFS.</p></div></div>
+          <div class="overview-grid">
+            <form id="document-form" class="content-card form-card">
+              <div class="form-grid one-column">
+                <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+                <label><span>Descrição</span><input name="description" minlength="3" maxlength="120" required></label>
+                <label><span>Arquivo</span><input name="document" type="file" required></label>
+                <label><span>CID no IPFS <small>opcional</small></span><input name="ipfsUri" placeholder="ipfs://... ou CID"></label>
+              </div>
+              <button class="button primary" type="submit">Calcular hash e registrar</button>
+            </form>
+            <article class="content-card explain-card">
+              <span class="eyebrow">O QUE É REGISTRADO</span><h3>Prova, não o conteúdo</h3>
+              <dl><div><dt>SHA-256</dt><dd>Detecta qualquer alteração no arquivo.</dd></div><div><dt>IPFS</dt><dd>Referencia o conteúdo fora da Ethereum.</dd></div><div><dt>Carteira</dt><dd>Identifica quem anexou a prova.</dd></div><div><dt>Timestamp</dt><dd>Marca quando o registro entrou na rede.</dd></div></dl>
+            </article>
+          </div>
+        </section>
+
+        <section id="eventos" class="panel" aria-labelledby="events-title" hidden>
+          <div class="section-heading"><div><span class="eyebrow">LOGS DA SEPOLIA</span><h2 id="events-title">Eventos do contrato</h2></div><button id="events-refresh" class="button secondary" type="button">Buscar eventos</button></div>
+          <article class="content-card"><div id="events-list" class="event-list"><p class="empty-state">Os eventos aparecerão depois da conexão.</p></div></article>
+        </section>
+
+        <section id="administracao" class="panel" aria-labelledby="admin-title" hidden>
+          <div class="section-heading"><div><span class="eyebrow">SOMENTE PROPRIETÁRIO</span><h2 id="admin-title">Administração do contrato</h2></div></div>
+          <div class="admin-grid">
+            <form id="role-form" class="content-card compact-form">
+              <h3>Gerenciar perfil</h3>
+              <label><span>Carteira</span><input name="account" class="mono" placeholder="0x..." required></label>
+              <label><span>Perfil</span><select name="role" required><option value="1">Produtor</option><option value="2">Beneficiador</option><option value="3">Transportador</option><option value="4">Distribuidor</option></select></label>
+              <div class="button-row"><button class="button primary" type="submit" name="operation" value="grant">Conceder</button><button class="button danger" type="submit" name="operation" value="revoke">Revogar</button></div>
+            </form>
+            <article class="content-card admin-action">
+              <h3>Controle de emergência</h3><p>Pause novas alterações de lote durante uma verificação. Consultas continuam disponíveis.</p>
+              <button id="pause-button" class="button danger full" type="button">Pausar contrato</button>
+            </article>
+            <article class="content-card admin-action">
+              <h3>Tesouraria</h3><p>Transfira as taxas de cadastro acumuladas para o endereço que implantou o contrato.</p>
+              <button id="withdraw-button" class="button secondary full" type="button">Sacar taxas</button>
+            </article>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <footer>
+      <img src="assets/logo.png" alt="EcoOrigem" width="136" height="43">
+      <p>Protótipo acadêmico na Ethereum Sepolia. Não use carteiras com fundos reais.</p>
+      <a href="https://github.com/JulianaBallin/EcoOrigem" target="_blank" rel="noreferrer">Código-fonte</a>
+    </footer>
+
+    <dialog id="transaction-dialog" aria-labelledby="transaction-title">
+      <div class="dialog-head"><div><span class="eyebrow">TRANSAÇÃO WEB3</span><h2 id="transaction-title">Confirme na MetaMask</h2></div><button class="icon-button" type="button" data-close-dialog aria-label="Fechar">×</button></div>
+      <div id="transaction-body" class="transaction-body"></div>
+      <div class="dialog-actions"><button class="button secondary" type="button" data-close-dialog>Fechar</button></div>
+    </dialog>
+
+    <div id="toasts" class="toasts" aria-live="polite" aria-atomic="true"></div>
+  </body>
+</html>

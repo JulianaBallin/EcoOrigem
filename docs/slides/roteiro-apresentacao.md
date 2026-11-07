@@ -1,52 +1,92 @@
 # Roteiro da apresentação
 
-Dez minutos no total. A divisão de falas abaixo é uma sugestão e pode ser ajustada
-pela equipe. Todos os integrantes participam e devem dominar o projeto.
+Tempo: 15 minutos de apresentação e 5 minutos de arguição. Os slides mantêm o design da Entrega 1 e foram atualizados para a dApp Ethereum.
 
-| Tempo | Conteúdo | Slides | Sugestão de fala |
+| Tempo | Slides | Conteúdo | Fala sugerida |
 | --- | --- | --- | --- |
-| 2 min | Contexto, problema, dados e solução (problema, objetivo e justificativa do uso de blockchain) | 1 a 5 | Ana |
-| 2 min | Arquitetura e funcionamento do contrato inteligente | 6 e 7 | Fernando |
-| 4 min | Demonstração prática na blockchain local | 8 | Juliana, Fernando e Ana |
-| 2 min | Testes, limitações e conclusão | 9 e 10 | Juliana |
-| Reserva | Bônus: relatório, laboratório de integridade e execução reproduzível | 11 a 14 | Perguntas |
+| 0:00 a 2:00 | 1 a 3 | Equipe, problema, solução e justificativa da Ethereum | Ana |
+| 2:00 a 4:00 | 4 e 5 | Fluxo dos atores e arquitetura Vercel, MetaMask, Web3.js e Sepolia | Juliana |
+| 4:00 a 8:00 | 6 a 8 | Máquina de estados e sete grupos obrigatórios de Solidity | Fernando |
+| 8:00 a 13:00 | 9 | Demonstração ao vivo pela Vercel | Juliana opera; todos explicam sua parte |
+| 13:00 a 15:00 | 10 a 12 | Testes, segurança, lições, limitações e conclusão | Ana e Fernando |
+| Encerramento | 13 | Perguntas | Equipe |
 
-Os slides 11 a 14 mostram o que foi feito além do pedido e ficam para o caso de sobrar tempo
-ou para responder perguntas. Os dados do slide 4 vêm do IBGE (PEVS 2023) e as fotos têm
-créditos em `docs/assets/produtos/CREDITOS.md`.
+## O que mostrar no contrato
 
-## Antes de começar
+Abra `contracts/EcoOrigem.sol` antes da apresentação e deixe marcados:
 
-1. Confirmar que a máquina tem Docker ou o ambiente virtual criado.
-2. Subir a stack limpa: `make docker-reset && make docker-up && make docker-seed`.
-3. Abrir <http://127.0.0.1:5000> e a apresentação em `docs/slides/apresentacao-ecoorigem.pdf`.
-4. Deixar `docs/slides/video/demonstracao.webm` aberto em outra janela como plano B.
+1. linhas 8 a 74: enums, structs, tipos, constantes, immutable, arrays e mappings;
+2. linhas 76 a 152: eventos, erros e modificadores;
+3. linhas 185 a 221: `registerLot` externo e pagável;
+4. linhas 225 a 358: máquina de estados e custódia;
+5. linhas 361 a 371: saque e interação externa;
+6. linhas 394 a 414: paginação com `if`, `require` e `for` limitado;
+7. linhas 437 a 541: funções `public pure`, `internal` e `private`.
 
-## Demonstração em quatro passos
+Não leia o código inteiro. Para cada grupo, explique uma decisão do domínio.
 
-| Passo | O que fazer | O que mostrar |
-| --- | --- | --- |
-| 1. Blockchain em execução | Mostrar `make docker-status` (ou o terminal do nó) e o Painel | Nó saudável, bloco atual, dificuldade e integridade da cadeia |
-| 2. Operação pela interface | Carteira Produtor, aba Registrar, Registrar lote, preencher origem e quantidade, enviar | Confirmação com hash da transação, bloco minerado e tentativas de nonce |
-| 3. Consulta e mudança de estado | Carteira Beneficiador, Registrar beneficiamento do lote criado, depois aba Consultar | Status passando de CADASTRADO para BENEFICIADO e a linha do tempo com bloco e autor |
-| 4. Operação rejeitada | Aba Registrar, cenário "Carteira sem permissão" (ou "Pular etapas"), enviar | Mensagem ACCESS_DENIED, nenhum bloco criado e a entrada na aba Rejeições |
+## Demonstração de 5 minutos
 
-Extras se sobrar tempo: aba Blockchain com a prova de Merkle e aba Integridade com
-"Adulterar dado gravado", que bloqueia novas operações até "Restaurar".
+Use o roteiro detalhado em [../demonstracao-local.md](../demonstracao-local.md):
 
-## Plano de contingência
-
-| Falha | Ação |
-| --- | --- |
-| Docker não sobe | Usar `make start` (sem Docker) |
-| Porta ocupada | `make stop` ou `make docker-down` e repetir |
-| Interface fora do ar | Exibir `docs/slides/video/demonstracao.webm` |
-| Estado sujo entre ensaios | `make docker-reset && make docker-up && make docker-seed` |
+1. conectar e autenticar;
+2. mostrar perfil e saldo;
+3. cadastrar lote com SepoliaETH;
+4. acompanhar hash pendente e confirmação;
+5. consultar lote e evento;
+6. provocar erro de perfil ou estado;
+7. abrir a transação no Etherscan.
 
 ## Perguntas prováveis
 
-- Por que não um banco de dados? Vários participantes, ninguém reescreve o histórico sozinho.
-- A blockchain garante que a informação é verdadeira? Não. Garante que o registro não muda depois de gravado.
-- Quem assina as transações? A carteira ativa, no gateway, com chave Ed25519. Em produção seria uma carteira externa.
-- O que impede pular etapas? O contrato, que valida a ordem antes de alterar o estado.
-- O que acontece se alguém alterar o arquivo da cadeia? A validação detecta e o nó bloqueia escritas.
+### Por que não usar usuário e senha?
+
+O frontend é estático e não possui servidor confiável para guardar sessões. Uma senha no JavaScript seria contornável e não protegeria o contrato. A MetaMask prova o controle do endereço por assinatura, e o contrato aplica o perfil on-chain.
+
+### O que é pago?
+
+Toda escrita paga gas. Além do gas, `registerLot` envia a taxa didática fixa de `0.00001 SepoliaETH`, acumulada no contrato até o saque do proprietário.
+
+### Qual a diferença entre `.call()` e `.send()`?
+
+`.call()` consulta o estado localmente e não cria transação. `.send()` solicita assinatura à MetaMask, consome gas e pode alterar o estado depois da confirmação.
+
+### Por que usar `bytes32` para documentos?
+
+O SHA-256 tem 32 bytes. Guardar o hash é muito mais barato e evita publicar o arquivo. O CID do IPFS localiza o conteúdo externo.
+
+### `private` deixa o dado secreto?
+
+Não. `private` limita o acesso por outros contratos no código Solidity, mas o storage da blockchain continua público.
+
+### O que impede pular uma etapa?
+
+O modificador `atStatus(lotId, expected)` compara o enum atual com o esperado. Se for diferente, `InvalidStatus` reverte a operação sem alterar o estado.
+
+### Uma carteira com o mesmo perfil pode agir no lote?
+
+Não necessariamente. Além do perfil, o contrato compara `msg.sender` com o endereço designado pela etapa anterior e retorna `DesignatedActorOnly`.
+
+### Como o contrato trata reentrância?
+
+A única interação externa é o saque para a tesouraria imutável, restrito ao proprietário e executado depois das verificações. O contrato não chama endereços fornecidos por usuários durante as etapas do lote.
+
+### A blockchain garante que o lote veio daquela origem?
+
+Não. Ela registra quem declarou, quando declarou e preserva o histórico. Veracidade física exige auditoria, sensores, certificadores ou oráculos.
+
+### O que acontece se o IPFS perder o arquivo?
+
+O hash on-chain continua existindo e permite verificar uma cópia recuperada, mas a disponibilidade da URI depende de pinning. Uma evolução é usar pinning redundante.
+
+## Checklist antes de apresentar
+
+- [ ] URL Vercel e contrato Sepolia preenchidos no README.
+- [ ] Fonte verificado no Etherscan.
+- [ ] MetaMask aberta na Sepolia, nunca na Mainnet.
+- [ ] Contas Produtor e conta sem perfil com saldo.
+- [ ] Endereço do beneficiador copiado.
+- [ ] Lote de demonstração ainda não usado ou ID conhecido.
+- [ ] Etherscan do contrato aberto.
+- [ ] Vídeo e capturas reais abertos como plano B.
+- [ ] Cronômetro ensaiado em 15 minutos.
