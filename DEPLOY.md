@@ -20,11 +20,31 @@ Prepare ao menos cinco contas de teste na MetaMask, preferencialmente sem fundos
 4. Coloque saldo na conta proprietária e na conta produtora. As demais contas também precisam de gas para suas etapas.
 5. Nunca use uma carteira com fundos reais nesta demonstração.
 
-## 2. Conferir o contrato local
+## 2. Preparar o workspace do Remix
 
 ```bash
 npm ci
+make remix
+```
+
+O comando atualiza `remix/contracts/EcoOrigem.sol` com uma cópia idêntica do contrato principal. A pasta `remix/` contém o contrato, o teste Solidity e as configurações necessárias para importação direta.
+
+## 3. Importar e compilar no Remix
+
+1. Abra o [Remix configurado para Solidity 0.8.34](https://app.remix.live/#lang=en&optimize&runs=200&evmVersion=paris&version=soljson-v0.8.34+commit.80d5c536.js).
+2. Importe o conteúdo completo da pasta `remix/` para um workspace chamado `EcoOrigem`. Nesse modo, abra `contracts/EcoOrigem.sol`. Como alternativa, ative o plugin **Git**, clone o repositório na branch `develop` e abra `remix/contracts/EcoOrigem.sol`.
+3. Em **Solidity Compiler**, confirme a versão `0.8.34`.
+4. Confirme **Enable optimization**, `200` runs e EVM `paris`. O arquivo `compiler_config.json` mantém esses parâmetros reproduzíveis.
+5. Compile o arquivo `EcoOrigem.sol` que está aberto.
+6. Não continue se houver erro ou aviso não compreendido.
+
+As configurações precisam coincidir com `scripts/compile-contract.mjs`; isso permite reproduzir o bytecode e verificar o fonte no Etherscan.
+
+Antes do deploy público, execute também:
+
+```bash
 make check
+make security
 ```
 
 Resultado esperado:
@@ -33,20 +53,8 @@ Resultado esperado:
 - optimizer habilitado, `runs = 200`;
 - EVM `paris`;
 - bytecode implantado abaixo de 24.576 bytes;
-- duas suítes aprovadas.
-
-## 3. Compilar no Remix
-
-1. Abra o [Remix configurado para Solidity 0.8.34](https://app.remix.live/#lang=en&optimize&runs=200&evmVersion&version=soljson-v0.8.34+commit.80d5c536.js).
-2. Crie `contracts/EcoOrigem.sol` no workspace do Remix.
-3. Copie integralmente o conteúdo de [`contracts/EcoOrigem.sol`](../contracts/EcoOrigem.sol).
-4. Em **Solidity Compiler**, escolha `0.8.34`.
-5. Ative **Enable optimization** e confirme `200` runs.
-6. Em **Advanced Configurations**, escolha EVM version `paris`.
-7. Compile `EcoOrigem.sol`.
-8. Confira que não existem erros ou avisos não compreendidos antes de continuar.
-
-As configurações precisam coincidir com `scripts/compile-contract.mjs`; isso permite reproduzir o mesmo bytecode e verificar o fonte no Etherscan.
+- duas suítes locais aprovadas;
+- verificação de credenciais aprovada.
 
 ## 4. Implantar pela MetaMask
 
@@ -79,7 +87,7 @@ No [Sepolia Etherscan](https://sepolia.etherscan.io), pesquise o hash da transa�
 3. Escolha a versão exata `v0.8.34+commit.80d5c536`.
 4. Marque optimizer **Yes** e `200` runs.
 5. Em EVM version, escolha `paris`.
-6. Cole o conteúdo de `contracts/EcoOrigem.sol`.
+6. Cole o conteúdo de `backend/contracts/EcoOrigem.sol`.
 7. Não informe argumentos do construtor.
 8. Conclua e confira as abas **Code**, **Read Contract** e **Write Contract**.
 
@@ -130,7 +138,7 @@ Inicie o frontend:
 make serve
 ```
 
-Abra <http://127.0.0.1:8000> no navegador com MetaMask e execute o [roteiro de testes](roteiro-testes.md).
+Abra <http://127.0.0.1:8000> no navegador com MetaMask e execute o [roteiro de testes](TESTES.md).
 
 ## 8. Documentos e IPFS
 
@@ -167,7 +175,7 @@ Registre a URL final no README e nesta tabela:
 
 ## 10. Capturas e vídeo
 
-Produza as evidências listadas em [prints/README.md](prints/README.md) somente depois de configurar o endereço final. Grave um vídeo de 3 a 5 minutos pela URL da Vercel mostrando:
+Produza as evidências em `docs/assets/evidencias/` somente depois de configurar o endereço final. Grave um vídeo de 3 a 5 minutos pela URL da Vercel mostrando:
 
 1. conexão e autenticação da carteira;
 2. leitura dos totais;
@@ -187,7 +195,7 @@ Publique o vídeo em local acessível ao professor e atualize o link no README.
 - [ ] `make check` aprovado depois da configuração.
 - [ ] Fluxo principal reproduzido por duas contas da MetaMask.
 - [ ] Vercel publicada por HTTPS.
-- [ ] Capturas reais adicionadas em `docs/prints/`.
+- [ ] Capturas reais adicionadas em `docs/assets/evidencias/`.
 - [ ] Vídeo de 3 a 5 minutos publicado e vinculado.
 - [ ] README sem campos `PENDENTE`.
 - [ ] Nenhuma chave, senha, token ou frase de recuperação no Git.

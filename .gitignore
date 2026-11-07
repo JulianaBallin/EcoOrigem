@@ -10,6 +10,9 @@ build/
 !.env.example
 .vercel/
 
+# Guia operacional pessoal, mantido somente no ambiente local
+GUIA-PASSO-A-PASSO-ENTREGA-2.md
+
 # Editores e sistema operacional
 .vscode/
 .idea/

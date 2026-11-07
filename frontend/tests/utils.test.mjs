@@ -7,7 +7,7 @@ import {
   normalizeLot,
   shortAddress,
   toQuantityGrams,
-} from "../frontend/utils.js";
+} from "../utils.js";
 
 test("formata e converte quantidades sem usar ponto flutuante no contrato", () => {
   assert.equal(toQuantityGrams("250.125"), "250125");

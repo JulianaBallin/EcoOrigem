@@ -39,7 +39,7 @@ Se não quiser depender de outra conta, use um lote em estado Cadastrado e tente
 | MetaMask na rede errada | Clique no indicador de rede e autorize a troca para Sepolia |
 | Transação cancelada | Explique o tratamento de erro e repita somente uma vez |
 | Vercel fora do ar | Execute `make serve` e use o mesmo contrato; informe que o plano principal é a URL HTTPS |
-| Rede indisponível | Use o vídeo de 3 a 5 minutos e as capturas reais de `docs/prints/` |
+| Rede indisponível | Use o vídeo de 3 a 5 minutos e as capturas reais de `docs/assets/evidencias/` |
 
 ## Não fazer durante a apresentação
 

@@ -4,7 +4,7 @@ Execute os cenários primeiro em ambiente local e depois pela URL final da Verce
 
 ## Preparação
 
-1. Confirme que o contrato foi implantado e configurado conforme [deploy-sepolia.md](deploy-sepolia.md).
+1. Confirme que o contrato foi implantado e configurado conforme [DEPLOY.md](DEPLOY.md).
 2. Deixe cinco contas MetaMask prontas: Proprietário, Produtor, Beneficiador, Transportador e Distribuidor.
 3. Garanta SepoliaETH em todas as contas que enviarão transações.
 4. Abra a dApp publicada por HTTPS ou execute `make serve`.
@@ -85,4 +85,4 @@ Depois de cada exceção, consulte o lote e confirme que o estado não mudou. Um
 
 ## Registro das evidências
 
-Após o deploy definitivo, salve as capturas previstas em [prints/README.md](prints/README.md). Não reutilize prints do protótipo Python da Entrega 1.
+Após o deploy definitivo, salve as capturas em `docs/assets/evidencias/`. Não reutilize prints da implementação Python da Primeira Entrega.

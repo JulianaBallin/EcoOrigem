@@ -13,26 +13,23 @@
   <img alt="Ethereum Sepolia" src="https://img.shields.io/badge/Ethereum-Sepolia-627EEA?style=for-the-badge&logo=ethereum&logoColor=white">
   <img alt="Web3.js" src="https://img.shields.io/badge/Web3.js-4.0.3-F16822?style=for-the-badge&logo=web3dotjs&logoColor=white">
   <img alt="MetaMask" src="https://img.shields.io/badge/MetaMask-carteira-F6851B?style=for-the-badge&logo=metamask&logoColor=white">
-  <img alt="Testes" src="https://img.shields.io/badge/Testes-57_verificações-0A9EDC?style=for-the-badge&logo=node.js&logoColor=white">
 </div>
 
----
+## Problema e solução
 
-<h2 align="center">Problema e solução</h2>
+Produtos como açaí, castanha-do-Brasil, cupuaçu e murumuru passam por várias organizações antes de chegar ao consumidor. Registros isolados dificultam verificar a integridade do histórico e identificar quem executou cada etapa.
 
-Produtos como açaí, castanha-do-Brasil, cupuaçu e murumuru passam por organizações diferentes antes de chegar ao consumidor. Cada participante mantém o próprio registro, o que dificulta verificar qual histórico é íntegro e quem executou cada etapa.
+O EcoOrigem registra o ciclo do lote em um contrato inteligente público. A MetaMask identifica cada participante, o contrato aplica os perfis e a ordem obrigatória, e a Sepolia mantém transações e eventos consultáveis. Documentos ficam fora da Ethereum: somente o hash SHA-256 e uma referência `ipfs://` são registrados.
 
-O **EcoOrigem** registra o ciclo do lote em um contrato inteligente público. A MetaMask identifica e autentica cada participante, o contrato aplica os perfis e a ordem obrigatória, e a Sepolia mantém transações e eventos consultáveis no Etherscan. Documentos permanecem fora da Ethereum: somente o hash SHA-256 e uma referência `ipfs://` são registrados.
+```text
+Produtor → Beneficiador → Transportador → Distribuidor → Consumidor
+```
 
-Produtor &rarr; Beneficiador &rarr; Transportador &rarr; Distribuidor &rarr; Consumidor
+A blockchain prova que um registro confirmado não foi alterado. Ela não garante que a informação enviada na origem era verdadeira.
 
-Blockchain é adequada porque participantes independentes precisam compartilhar o mesmo histórico sem entregar a uma única organização o poder de reescrevê-lo. Ela prova que o registro confirmado não mudou, mas não garante que a informação enviada na origem era verdadeira.
+## Estado da publicação
 
----
-
-<h2 align="center">Estado da publicação</h2>
-
-Os artefatos locais estão prontos e validados. As três ações abaixo exigem a carteira MetaMask e as contas externas da equipe; por isso, não podem ser simuladas nem preenchidas com dados fictícios.
+Os artefatos locais estão prontos e validados. As ações abaixo exigem a MetaMask e as contas externas da equipe.
 
 | Item obrigatório | Estado em 07/11/2026 | Dado final |
 | --- | --- | --- |
@@ -42,23 +39,21 @@ Os artefatos locais estão prontos e validados. As três ações abaixo exigem a
 | dApp na Vercel | Pendente de vincular o repositório | URL: `PENDENTE` |
 | Vídeo de 3 a 5 minutos | Pendente após a publicação | URL: `PENDENTE` |
 
-O procedimento completo está em [Implantação na Sepolia e Vercel](docs/deploy-sepolia.md). Depois do deploy, um único comando registra endereço, bloco e hash no frontend:
+O procedimento público está em [DEPLOY.md](DEPLOY.md). Depois do deploy, registre endereço, bloco e hash no frontend:
 
 ```bash
 make configure ADDRESS=0x... BLOCK=123456 TX=0x...
 ```
 
----
-
-<h2 align="center">Arquitetura</h2>
+## Arquitetura
 
 ```text
 Pessoa usuária
     │
     ▼
-Frontend estático na Vercel ── Web3.js 4.0.3 ── MetaMask
+Frontend estático na Vercel ── Web3.js 4.x ── MetaMask
     │                                              │
-    │ .call()                                      │ assinatura e .send()
+    │ consultas .call()                            │ assinatura e .send()
     └──────────────────────┬───────────────────────┘
                            ▼
                  Ethereum Sepolia
@@ -73,18 +68,19 @@ Frontend estático na Vercel ── Web3.js 4.0.3 ── MetaMask
                   conteúdo no IPFS
 ```
 
-| Componente | Responsabilidade |
+| Camada | Responsabilidade |
 | --- | --- |
-| [Contrato Solidity](contracts/EcoOrigem.sol) | Perfis, custódia, máquina de estados, taxa de cadastro, documentos, eventos e administração |
-| [Frontend](frontend/) | Conexão, autenticação por assinatura, troca de rede, consultas, transações, eventos e mensagens de erro |
-| MetaMask | Mantém as chaves fora da aplicação, assina o desafio de sessão e confirma transações |
+| [Backend Solidity](backend/contracts/EcoOrigem.sol) | Perfis, custódia, máquina de estados, taxa, documentos, eventos e administração |
+| [Frontend](frontend/) | Conexão, autenticação por assinatura, consultas, transações, eventos e mensagens de erro |
+| [Workspace Remix](remix/) | Cópia sincronizada do contrato, configuração reproduzível e testes Solidity |
+| MetaMask | Mantém as chaves fora da aplicação, assina o desafio e confirma transações |
 | Ethereum Sepolia | Executa o contrato, confirma transações e replica o estado público |
-| IPFS | Armazena opcionalmente o documento; o contrato guarda somente hash e URI |
+| IPFS | Armazena opcionalmente documentos; o contrato guarda somente hash e URI |
 | Etherscan | Permite conferir contrato, transações, blocos e eventos |
 
 ### Autenticação e perfis
 
-Não existe senha armazenada no navegador ou na blockchain. Em uma dApp estática, um formulário de usuário e senha poderia ser contornado e não protegeria o contrato. O EcoOrigem usa o modelo próprio da Ethereum:
+Não existe senha armazenada no navegador ou na blockchain. Em uma dApp estática, usuário e senha no frontend poderiam ser contornados e não protegeriam o contrato. O fluxo usa o modelo nativo da Ethereum:
 
 1. a MetaMask conecta a conta;
 2. a carteira assina um desafio único, sem gas;
@@ -92,11 +88,7 @@ Não existe senha armazenada no navegador ou na blockchain. Em uma dApp estátic
 4. o contrato consulta os perfis concedidos ao endereço;
 5. cada escrita ainda precisa ser assinada e autorizada on-chain.
 
-Esse fluxo autentica o controle da carteira. A autorização real sempre ocorre no contrato, e não apenas na interface.
-
----
-
-<h2 align="center">Contrato inteligente</h2>
+## Contrato inteligente
 
 ### Ciclo de vida
 
@@ -112,109 +104,90 @@ Esse fluxo autentica o controle da carteira. A autorização real sempre ocorre 
 
 | Função | Quem chama | Efeito | Evento principal | Erros esperados |
 | --- | --- | --- | --- | --- |
-| `grantRole` | Proprietário | Concede perfil a uma carteira | `RoleUpdated` | `Unauthorized`, `InvalidData` |
+| `grantRole` | Proprietário | Concede perfil | `RoleUpdated` | `Unauthorized`, `InvalidData` |
 | `revokeRole` | Proprietário | Revoga perfil | `RoleUpdated` | `Unauthorized` |
 | `setPaused` | Proprietário | Pausa ou retoma escritas | `PauseChanged` | `Unauthorized`, `require` |
 | `registerLot` | Produtor | Cadastro pagável e designação do beneficiador | `LotRegistered` | `WrongFee`, `Unauthorized`, `InvalidData` |
 | `recordProcessing` | Beneficiador designado | Avança e designa transportador | `LotStatusChanged`, `DocumentAttached` | `InvalidStatus`, `DesignatedActorOnly` |
-| `startTransport` | Transportador designado | Avança, registra temperatura e designa distribuidor | `LotStatusChanged` | `InvalidStatus`, `Unauthorized` |
+| `startTransport` | Transportador designado | Registra transporte e designa distribuidor | `LotStatusChanged` | `InvalidStatus`, `Unauthorized` |
 | `confirmDelivery` | Distribuidor designado | Confirma entrega e custódia | `LotStatusChanged` | `DesignatedActorOnly` |
 | `finalizeLot` | Distribuidor custodiante | Encerra o ciclo | `LotStatusChanged` | `InvalidStatus` |
 | `attachDocument` | Custodiante atual | Registra SHA-256 e URI IPFS | `DocumentAttached` | `DuplicateDocument`, `InvalidData` |
-| `withdrawFees` | Proprietário | Envia as taxas à tesouraria imutável | `FeesWithdrawn` | `TransferFailed`, `require` |
+| `withdrawFees` | Proprietário | Envia taxas à tesouraria imutável | `FeesWithdrawn` | `TransferFailed`, `require` |
 
 Consultas públicas: `hasRole`, `totalLots`, `getLot`, `getLots`, `getDocuments`, `getHistory` e `statusLabel`.
 
-### Sete grupos obrigatórios de Solidity
+### Recursos obrigatórios de Solidity
 
-Todos estão marcados no código com comentários `// [Recurso: ...]`.
+Os sete grupos exigidos no trabalho aparecem com comentários `// [Recurso: ...]` no contrato e seguem os exemplos do material de apoio do professor.
 
-| Grupo | Onde aparece | Justificativa |
+| Grupo | Implementação no EcoOrigem | Justificativa |
 | --- | --- | --- |
-| Tipos de dados | Linhas 58 a 65; `Lot` nas linhas 25 a 41 | `uint256` mede quantidade e tempo, `int256` permite temperatura negativa, `bool` representa atividade/pausa, `address payable` recebe taxas, `string` guarda dados descritivos e `bytes32` guarda hashes. `constant` e `immutable` evitam alterações indevidas |
-| Funções | `constructor` na linha 114; funções de negócio 157 a 361; consultas 374 a 437; internas 445 a 541 | `external`, `public`, `internal` e `private` reduzem a superfície de chamada. `view` e `pure` fazem leitura sem transação. `registerLot` é `payable` |
-| Estruturas de controle | `registerLot` 192 a 221; `getLots` 394 a 414; `statusLabel` 437 a 443 | `if/else`, `require` e `for` implementam validação, paginação limitada a 50 e tradução de estados |
-| Arrays e mappings | Linhas 67 a 74; `getLots` e `_storeDocument` | Array dinâmico lista IDs e históricos. Mappings ligam ID a struct, endereço a contagem e usam chaves aninhadas para perfis e documentos |
-| Structs e enums | Linhas 8 a 56 | `Role` e `Status` restringem valores; `Lot`, `Document` e `HistoryEntry` organizam entidades com mais de três campos |
-| Modificadores | Linhas 119 a 152 | `onlyOwner`, `onlyRole(role)`, `lotExists(id)`, `atStatus(id,status)` e `whenRunning` reutilizam acesso, existência, estado e pausa. Três recebem parâmetros |
-| Eventos e erros | Linhas 76 a 111 | Seis eventos expõem histórico com parâmetros `indexed`; nove erros personalizados devolvem causas e argumentos que o frontend traduz |
+| Tipos de dados | `uint256`, `int256`, `bool`, `address payable`, `string`, `bytes32`, `constant`, `immutable` | Representam quantidade, temperatura, pausa, tesouraria, textos, hashes e valores imutáveis |
+| Funções | `constructor`, funções `external`, `public`, `internal`, `private`, `view`, `pure` e `payable` | Restringem a superfície de chamada e distinguem leitura, escrita e recebimento de ETH |
+| Estruturas de controle | `if/else`, `require` e `for` limitado a 50 itens | Validam entradas, controlam estados e evitam laços públicos sem limite |
+| Arrays e mappings | IDs e históricos dinâmicos, perfis e documentos em mappings | Mantêm índices e relações eficientes por lote e carteira |
+| Structs e enums | `Lot`, `Document`, `HistoryEntry`, `Role` e `Status` | Organizam as entidades e restringem os estados válidos |
+| Modificadores | `onlyOwner`, `onlyRole`, `lotExists`, `atStatus`, `whenRunning` | Reutilizam autorização, existência, estado e pausa |
+| Eventos e erros | Seis eventos e nove erros personalizados | Expõem histórico pesquisável e retornam causas específicas ao frontend |
 
-### Segurança aplicada
+Mais detalhes estão em [backend/README.md](backend/README.md).
 
-- Chaves privadas e frases de recuperação nunca entram no projeto.
-- Controle de acesso e custódia é repetido no contrato, mesmo quando o frontend oculta ações.
-- A taxa precisa ser exata e o saque usa a tesouraria imutável.
-- O laço público tem limite de 50 itens para evitar consumo sem limite.
-- Arquivos e credenciais não são gravados on-chain.
-- O saque segue checks-effects-interactions e só pode ser chamado pelo proprietário.
-- Entradas têm limites de tamanho, quantidade, data, temperatura e formato de endereço.
+## Frontend e integração Web3
 
----
-
-<h2 align="center">Frontend e integração Web3</h2>
-
-O frontend usa HTML, CSS e JavaScript puros. A Web3.js 4.0.3 é carregada por CDN e protegida por SRI, atendendo ao requisito de versão 4.x.
+O frontend usa HTML, CSS e JavaScript puros, como nos exemplos de Mural do material de apoio. A Web3.js 4.0.3 é carregada por CDN com SRI.
 
 | Requisito | Implementação |
 | --- | --- |
 | Conectar carteira e saldo | `eth_requestAccounts`, endereço reduzido e `getBalance` |
-| Conferir/trocar rede | `eth_chainId` e `wallet_switchEthereumChain`; opção de adicionar Sepolia |
-| Leitura | totais, perfis, lotes, documentos e histórico com `.call()` |
+| Conferir ou trocar rede | `eth_chainId`, `wallet_switchEthereumChain` e inclusão da Sepolia |
+| Leitura | Totais, perfis, lotes, documentos e histórico com `.call()` |
 | Escrita com ETH | `registerLot(...).send({ value: REGISTRATION_FEE })` |
-| Estado da transação | diálogo para confirmação, pendência, bloco confirmado ou falha; hash abre no Etherscan |
-| Erros | cancelamento, saldo insuficiente, `require` e erros personalizados traduzidos para português |
-| Eventos | `getPastEvents("allEvents")` limitado ao bloco do deploy ou aos 50 mil blocos recentes |
-| Interface do dono | aba Administração aparece somente para o endereço `owner` |
-| Troca de conta/rede | listeners `accountsChanged` e `chainChanged` invalidam a sessão e recarregam os dados |
-| Responsividade | validada em 1440 px, 768 px e 390 px, sem rolagem horizontal |
+| Estado da transação | Confirmação, pendência, bloco confirmado ou falha, com link para Etherscan |
+| Erros | Cancelamento, saldo insuficiente, `require` e erros personalizados em português |
+| Eventos | `getPastEvents("allEvents")` a partir do bloco de implantação |
+| Administração | Funções administrativas visíveis somente ao endereço `owner` |
+| Troca de conta ou rede | `accountsChanged` e `chainChanged` invalidam a sessão e recarregam os dados |
 
----
-
-<h2 align="center">Estrutura do repositório</h2>
+## Estrutura em camadas
 
 ```text
 EcoOrigem/
-├── contracts/
-│   └── EcoOrigem.sol
+├── backend/
+│   ├── contracts/EcoOrigem.sol       # contrato atual da Entrega 2
+│   ├── tests/contract.test.mjs        # integração local com Ganache
+│   └── python/                        # implementação didática da Entrega 1
 ├── frontend/
 │   ├── assets/
+│   ├── tests/utils.test.mjs
 │   ├── index.html
 │   ├── style.css
 │   ├── app.js
 │   ├── utils.js
-│   └── contract.js              # ABI + dados do deploy
-├── tests/
-│   ├── contract.test.mjs
-│   └── frontend-utils.test.mjs
-├── scripts/
-│   ├── compile-contract.mjs
-│   ├── sync-contract-config.mjs
-│   ├── configure-contract.mjs
-│   ├── validate-frontend.mjs
-│   └── build_slides.py
+│   └── contract.js                    # ABI e dados do deploy
+├── remix/
+│   ├── contracts/EcoOrigem.sol        # cópia gerada do contrato principal
+│   ├── tests/EcoOrigem_test.sol       # testes executáveis no Remix
+│   ├── compiler_config.json
+│   └── remix.config.json
+├── scripts/                            # compilação, validação e segurança
 ├── docs/
-│   ├── deploy-sepolia.md
-│   ├── roteiro-testes.md
-│   ├── demonstracao-local.md
-│   ├── prints/
+│   ├── assets/
+│   ├── relatorio/
 │   └── slides/
-├── legacy/
-│   └── entrega-1-python/          # protótipo local preservado, fora da dApp atual
+├── DEPLOY.md
+├── TESTES.md
+├── DEMONSTRACAO.md
 ├── Makefile
 ├── package.json
 └── vercel.json
 ```
 
----
+O diretório `docs/` contém somente recursos visuais, relatório e apresentação. Os documentos operacionais ficam na raiz para manter a organização solicitada.
 
-<h2 align="center">Executar localmente</h2>
+## Executar localmente
 
-### Requisitos
-
-- Node.js 20 ou superior;
-- Python 3 somente para o servidor estático e para regenerar os slides;
-- navegador com [MetaMask](https://metamask.com/pt-BR);
-- SepoliaETH de teste, nunca ETH real.
+Requisitos: Node.js 20 ou superior, Python 3 para o servidor estático e um navegador com [MetaMask](https://metamask.com/pt-BR).
 
 ```bash
 git clone https://github.com/JulianaBallin/EcoOrigem.git
@@ -224,80 +197,66 @@ make check
 make serve
 ```
 
-Abra <http://127.0.0.1:8000>. O navegador precisa servir os arquivos por HTTP; a MetaMask não funciona corretamente ao abrir `index.html` por `file://`.
-
-Comandos principais:
+Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carteira precisa de uma origem HTTP ou HTTPS.
 
 | Comando | Função |
 | --- | --- |
-| `make menu` | Exibe o menu interativo |
 | `make compile` | Compila com Solidity 0.8.34, optimizer de 200 runs e EVM Paris |
+| `make remix` | Atualiza a pasta completa que pode ser importada no Remix |
 | `make abi` | Compila e sincroniza a ABI em `frontend/contract.js` |
-| `make test` | Executa o contrato em uma Ethereum local isolada e testa utilitários |
-| `make check` | Compila, sincroniza ABI, valida o frontend e executa os testes |
-| `make security` | Audita tudo, falha para achados fora das ferramentas locais e confirma que a publicação não tem dependências npm |
-| `make slides` | Regera PPTX e PDF preservando o design da Entrega 1 |
+| `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
+| `make check` | Prepara o Remix, compila, sincroniza ABI, valida e testa |
+| `make security` | Procura credenciais e audita as dependências locais |
+| `make slides` | Regenera a apresentação PPTX e PDF |
 
----
+## Testes e demonstração
 
-<h2 align="center">Testes e demonstração</h2>
-
-O teste automatizado implanta um contrato novo em uma Ethereum local e cobre o fluxo completo, sem usar saldo ou rede pública. São **57 verificações** entre as duas suítes:
-
-- proprietário, concessão e revogação de quatro perfis;
-- taxa ausente e cadastro pagável correto;
-- ator sem perfil e ator não designado;
-- cinco estados na ordem e tentativa de pular etapas;
-- temperatura fora do limite;
-- documento novo, repetido e anexado por carteira sem custódia;
-- consulta, paginação e histórico;
-- pausa, retomada, saque e tentativa de saque sem saldo;
-- conversões de quantidade/data, URI IPFS e tuplas Web3.
-
-O roteiro reproduzível para o avaliador está em [docs/roteiro-testes.md](docs/roteiro-testes.md). A demonstração de 5 minutos está em [docs/demonstracao-local.md](docs/demonstracao-local.md).
+Os testes automatizados implantam um contrato novo em uma Ethereum local, sem saldo nem rede pública. Cobrem perfis, taxa, fluxo completo, estados inválidos, custódia, documentos, paginação, pausa, saque, conversões do frontend e tratamento de dados Web3.
 
 ```bash
 make check
+make security
 ```
 
-Resultado local de 07/11/2026: contrato compilado com Solidity `0.8.34`, bytecode implantado de `13.592 bytes`, duas suítes aprovadas e frontend sem erros JavaScript em desktop, tablet e celular.
+Use [TESTES.md](TESTES.md) para reproduzir os cenários e [DEMONSTRACAO.md](DEMONSTRACAO.md) para ensaiar a demonstração de cinco minutos.
 
----
+## Segurança e dados sensíveis
 
-<h2 align="center">Documentação</h2>
+- Nunca registre chave privada, frase de recuperação, senha, token ou credencial no Git, em URLs, em logs, no código ou no Docker Compose.
+- Arquivos `.env` são ignorados. Quando uma configuração privada for realmente necessária, ela deve existir apenas no `.env` local ou no gerenciador seguro da plataforma.
+- Arquivos `.env.example` contêm somente nomes e valores não sensíveis de exemplo.
+- O frontend publicado é estático. Qualquer variável entregue ao navegador é pública, mesmo se tiver sido lida de um `.env` durante o build. Portanto, tokens e chaves secretas não pertencem ao frontend nem às variáveis públicas da Vercel.
+- A MetaMask mantém a chave privada fora da aplicação. O EcoOrigem solicita conexão e assinatura, nunca a chave ou a frase de recuperação.
+- `make security` falha se detectar formatos comuns de credenciais nos arquivos publicáveis.
 
-| Documento | Conteúdo |
+## Documentação e entregáveis
+
+| Item | Conteúdo |
 | --- | --- |
-| [Implantação](docs/deploy-sepolia.md) | Remix, MetaMask, faucet, Etherscan, configuração do frontend e Vercel |
-| [Contrato](docs/contrato-inteligente.md) | Regras, perfis, estados, eventos, erros e segurança |
-| [Roteiro de testes](docs/roteiro-testes.md) | Preparação e cenários válidos e inválidos |
-| [Demonstração](docs/demonstracao-local.md) | Sequência de 5 minutos para a apresentação ao vivo |
-| [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | 13 slides no design da Entrega 1 |
+| [Implantação](DEPLOY.md) | Procedimento público de Sepolia, Etherscan, frontend e Vercel |
+| [Contrato](backend/README.md) | Regras, perfis, estados, eventos, erros e segurança |
+| [Roteiro de testes](TESTES.md) | Cenários válidos, inválidos, administrativos e responsivos |
+| [Demonstração](DEMONSTRACAO.md) | Sequência de cinco minutos e plano de contingência |
+| [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | Oito slides para a apresentação |
 | [Apresentação editável](docs/slides/apresentacao-ecoorigem.pptx) | PPTX com notas de fala |
-| [Roteiro da apresentação](docs/slides/roteiro-apresentacao.md) | Divisão dos 15 minutos e perguntas prováveis |
-| [Evidências](docs/prints/README.md) | Checklist de capturas a produzir após o deploy |
+| [Relatório PDF](docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf) | Relatório técnico da Primeira Entrega preservado como evidência |
 
----
+## Limitações e melhorias futuras
 
-<h2 align="center">Limitações e melhorias futuras</h2>
+- A rede confirma autoria da carteira e permanência do registro, não a veracidade do dado de origem.
+- Endereços, transações e dados on-chain são públicos. Não devem conter dados pessoais ou documentos sigilosos.
+- A disponibilidade de arquivos no IPFS depende de pinning; o hash continua verificável se o arquivo ficar indisponível.
+- A taxa de cadastro é fixa no bytecode.
+- Perfis revogados podem deixar um lote sem o ator designado. Uma substituição administrativa com evento e prazo é uma melhoria futura.
+- Um uso produtivo exigiria auditoria independente, política de privacidade, oráculos e plano de resposta a incidentes.
 
-- A rede não confirma se o dado enviado é verdadeiro; confirma autoria da carteira e permanência do registro.
-- Endereços, transações e dados on-chain são públicos. Não devem ser usados dados pessoais ou documentos sigilosos.
-- A disponibilidade do arquivo no IPFS depende de pinning; o hash permanece verificável mesmo se o arquivo ficar indisponível.
-- A taxa de cadastro é fixa no bytecode. Uma versão futura pode usar governança com atraso para alterar parâmetros.
-- A lista do frontend mostra até 50 lotes por vez; paginação incremental é a próxima evolução.
-- Perfis revogados podem deixar um lote sem o ator designado. Uma função administrativa de substituição, com evento e prazo, pode tratar contingências.
-- Antes de uso produtivo seriam necessários auditoria independente, política de privacidade, oráculos e plano de resposta a incidentes.
-
----
-
-<h2 align="center">Equipe</h2>
+## Equipe
 
 | Integrante | Papel principal na Entrega 2 |
 | --- | --- |
-| **Ana Beatriz Maciel Nunes** | Experiência do frontend e apresentação |
-| **Fernando Luiz da Silva Freire** | Contrato Solidity e regras de negócio |
-| **Juliana Ballin Lima** | Integração Web3, testes, documentação e implantação |
+| Ana Beatriz Maciel Nunes | Experiência do frontend e apresentação |
+| Fernando Luiz da Silva Freire | Contrato Solidity e regras de negócio |
+| Juliana Ballin Lima | Integração Web3, testes, documentação e implantação |
 
 Todos os integrantes devem dominar contrato, frontend e fluxo de implantação para a arguição.
 

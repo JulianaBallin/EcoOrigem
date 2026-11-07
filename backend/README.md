@@ -1,6 +1,6 @@
 # Contrato inteligente EcoOrigem
 
-O contrato [`EcoOrigem.sol`](../contracts/EcoOrigem.sol) implementa rastreabilidade por perfis, custódia designada e máquina de estados. A conta que implanta torna-se `owner` e `treasury`, ambas imutáveis.
+O contrato [`EcoOrigem.sol`](contracts/EcoOrigem.sol) implementa rastreabilidade por perfis, custódia designada e máquina de estados. A conta que implanta torna-se `owner` e `treasury`, ambas imutáveis.
 
 ## Perfis
 

@@ -4,9 +4,9 @@ import process from "node:process";
 import solc from "solc";
 
 const root = process.cwd();
-const sourcePath = path.join(root, "contracts", "EcoOrigem.sol");
+const sourcePath = path.join(root, "backend", "contracts", "EcoOrigem.sol");
 const outputDirectory = path.join(root, "build");
-const sourceName = "contracts/EcoOrigem.sol";
+const sourceName = "backend/contracts/EcoOrigem.sol";
 
 const input = {
   language: "Solidity",

@@ -17,7 +17,7 @@ function currentValue(name, fallback) {
 const address = currentValue("CONTRACT_ADDRESS", '""');
 const block = currentValue("DEPLOYMENT_BLOCK", "0");
 const transaction = currentValue("DEPLOYMENT_TX", '""');
-const contents = `// Gerado a partir de contracts/EcoOrigem.sol por \`npm run sync:abi\`.
+const contents = `// Gerado a partir de backend/contracts/EcoOrigem.sol por \`npm run sync:abi\`.
 // Preencha os dados de implantação depois do deploy na Sepolia.
 export const CONTRACT_ADDRESS = ${address};
 export const DEPLOYMENT_BLOCK = ${block};
