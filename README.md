@@ -233,7 +233,7 @@ Use [TESTES.md](TESTES.md) para reproduzir os cenários. O ensaio da demonstraç
 | --- | --- |
 | [Contrato](backend/README.md) | Regras, perfis, estados, eventos, erros e segurança |
 | [Roteiro de testes](TESTES.md) | Cenários válidos, inválidos, administrativos e responsivos |
-| [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | Oito slides para a apresentação |
+| [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | Nove slides para a apresentação |
 | [Apresentação editável](docs/slides/apresentacao-ecoorigem.pptx) | PPTX com notas de fala |
 | [Relatório PDF](docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf) | Relatório técnico da Primeira Entrega preservado como evidência |
 | [Relatório editável](docs/relatorio/relatorio-desenvolvimento-ecoorigem.docx) | Fonte editável do relatório técnico preservado |

@@ -1,6 +1,8 @@
-"""Build the eight-slide Delivery 2 deck from the original Canva template."""
+"""Build the nine-slide Delivery 2 deck from the original Canva template."""
 
-# pylint: disable=protected-access,too-many-arguments,too-many-locals,too-many-statements
+# pylint: disable=protected-access,too-many-arguments,too-many-locals
+# pylint: disable=too-many-statements,too-many-positional-arguments
+# pylint: disable=too-many-branches,too-many-return-statements,line-too-long
 
 from __future__ import annotations
 
@@ -23,8 +25,8 @@ PDF = SLIDES_DIR / "apresentacao-ecoorigem.pdf"
 UEA_LOGO = ROOT / "docs" / "assets" / "uea.png"
 REPORT_IMAGE = ROOT / "docs" / "assets" / "relatorio-arquitetura.png"
 
-TITLE_FONT = "TOMO Trompa Pro"
-BODY_FONT = "Open Sans 2"
+TITLE_FONT = "Ubuntu Sans"
+BODY_FONT = "Ubuntu Sans"
 CREAM = "FFF9ED"
 GREEN = "72BF97"
 GREEN_DARK = "558176"
@@ -39,8 +41,8 @@ BLACK = "202522"
 BLUE = "6E83EA"
 TEAL = "31A99B"
 PURPLE = "8175D8"
-SAFE_TOP = 0.72
-SAFE_BOTTOM = 10.53
+SAFE_TOP = 0.55
+SAFE_BOTTOM = 10.65
 
 
 def rgb(value: str) -> RGBColor:
@@ -97,8 +99,9 @@ def style_text(
     align: PP_ALIGN = PP_ALIGN.LEFT,
     font_name: str = BODY_FONT,
     margin: float = 0.08,
+    bold: bool = False,
 ) -> None:
-    """Set horizontal regular-weight text using the original deck fonts."""
+    """Set horizontal text with explicit hierarchy and installed fonts."""
     frame = shape.text_frame
     frame.clear()
     frame.word_wrap = True
@@ -117,7 +120,7 @@ def style_text(
         for run in paragraph.runs:
             run.font.name = font_name
             run.font.size = Pt(size)
-            run.font.bold = False
+            run.font.bold = bold
             run.font.italic = False
             run.font.color.rgb = rgb(color)
     shape.rotation = 0
@@ -135,10 +138,11 @@ def add_text(
     align: PP_ALIGN = PP_ALIGN.LEFT,
     font_name: str = BODY_FONT,
     margin: float = 0.08,
+    bold: bool = False,
 ):
     """Add a horizontal text box."""
     shape = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
-    style_text(shape, text, size, color, align, font_name, margin)
+    style_text(shape, text, size, color, align, font_name, margin, bold)
     return shape
 
 
@@ -170,81 +174,69 @@ def add_round_rect(
     return shape
 
 
+def add_oval(
+    slide,
+    x: float,
+    y: float,
+    w: float,
+    h: float,
+    fill: str,
+    transparency: int = 0,
+):
+    """Add an organic oval used as an accent instead of a content card."""
+    shape = slide.shapes.add_shape(
+        MSO_SHAPE.OVAL,
+        Inches(x),
+        Inches(y),
+        Inches(w),
+        Inches(h),
+    )
+    solid(shape, fill, transparency)
+    no_line(shape)
+    shape.rotation = 0
+    return shape
+
+
 def add_title(
     slide,
     title: str,
     subtitle: str,
-    width: float = 14.0,
+    width: float = 16.5,
     title_color: str = GREEN_DARK,
-    subtitle_color: str = GRAY,
+    subtitle_color: str = ORANGE,
+    title_size: float = 47,
 ) -> None:
-    """Add the shared horizontal title with balanced top spacing."""
+    """Add a bold rounded title, a colored subtitle and organic accents."""
+    add_oval(slide, 0.72, 0.73, 0.42, 0.42, subtitle_color)
+    add_oval(slide, 0.62, 1.13, 0.19, 0.19, title_color)
     add_text(
         slide,
-        0.90,
-        SAFE_TOP,
+        1.28,
+        0.60,
         width,
-        0.72,
+        0.92,
         title,
-        39,
+        title_size,
         title_color,
         PP_ALIGN.LEFT,
         TITLE_FONT,
         0.02,
+        True,
     )
     add_text(
         slide,
-        0.94,
-        1.48,
+        1.31,
+        1.55,
         width,
-        0.43,
+        0.48,
         subtitle,
-        15.5,
+        19,
         subtitle_color,
         PP_ALIGN.LEFT,
         BODY_FONT,
         0.02,
+        False,
     )
-
-
-def add_card(
-    slide,
-    x: float,
-    y: float,
-    w: float,
-    h: float,
-    title: str,
-    body: str,
-    accent: str = GREEN,
-    title_size: float = 19,
-    body_size: float = 14.5,
-    center: bool = False,
-) -> None:
-    """Add a template-style card with a small color marker."""
-    add_round_rect(slide, x + 0.05, y + 0.07, w, h, GREEN_DARK, None).fill.transparency = 86
-    add_round_rect(slide, x, y, w, h, CREAM, GREEN_LINE, 1.0)
-    marker = add_round_rect(slide, x + 0.17, y + 0.19, 0.12, h - 0.38, accent, None)
-    marker.adjustments[0] = 0.20
-    alignment = PP_ALIGN.CENTER if center else PP_ALIGN.LEFT
-    add_text(slide, x + 0.42, y + 0.16, w - 0.58, 0.48, title, title_size, GREEN_DARK, alignment)
-    add_text(slide, x + 0.42, y + 0.70, w - 0.58, h - 0.84, body, body_size, INK, alignment)
-
-
-def add_pill(
-    slide,
-    x: float,
-    y: float,
-    w: float,
-    h: float,
-    text: str,
-    fill: str,
-    color: str,
-    size: float,
-) -> None:
-    """Add a compact rounded label."""
-    shape = add_round_rect(slide, x, y, w, h, fill, None)
-    shape.adjustments[0] = 0.28
-    style_text(shape, text, size, color, PP_ALIGN.CENTER, BODY_FONT, 0.03)
 
 
 def add_circle(slide, x: float, y: float, size: float, fill: str, line: str | None = None):
@@ -302,7 +294,7 @@ def add_icon(slide, kind: str, x: float, y: float, size: float = 0.68) -> None:
     """Draw compact vector icons that fit the original visual language."""
     if kind == "remix":
         base = add_round_rect(slide, x, y, size, size, BLACK, None)
-        style_text(base, "R", 21, WHITE, PP_ALIGN.CENTER, TITLE_FONT, 0.01)
+        style_text(base, "R", 21, WHITE, PP_ALIGN.CENTER, TITLE_FONT, 0.01, True)
         return
     if kind in {"solidity", "sepolia"}:
         color = GRAY if kind == "solidity" else BLUE
@@ -355,7 +347,18 @@ def add_icon(slide, kind: str, x: float, y: float, size: float = 0.68) -> None:
         shape.line.color.rgb = rgb(TEAL)
         shape.line.width = Pt(1.8)
         shape.rotation = 0
-        add_text(slide, x + 0.07, y + 0.18, size - 0.14, 0.28, "IPFS", 10.5, TEAL, PP_ALIGN.CENTER)
+        add_text(
+            slide,
+            x + 0.07,
+            y + 0.18,
+            size - 0.14,
+            0.28,
+            "IPFS",
+            10.5,
+            TEAL,
+            PP_ALIGN.CENTER,
+            bold=True,
+        )
         return
     if kind == "vercel":
         triangle = slide.shapes.add_shape(
@@ -383,7 +386,7 @@ def add_icon(slide, kind: str, x: float, y: float, size: float = 0.68) -> None:
             )
         return
     if kind == "browser":
-        screen = add_round_rect(slide, x, y + 0.05, size, size * 0.72, CREAM, GREEN_DARK, 1.4)
+        add_round_rect(slide, x, y + 0.05, size, size * 0.72, CREAM, GREEN_DARK, 1.4)
         add_round_rect(slide, x + 0.06, y + 0.12, size - 0.12, 0.09, GREEN, None)
         return
     if kind == "person":
@@ -391,14 +394,33 @@ def add_icon(slide, kind: str, x: float, y: float, size: float = 0.68) -> None:
         add_round_rect(slide, x + size * 0.18, y + size * 0.34, size * 0.64, size * 0.50, GREEN_DARK, None)
         return
     if kind == "contract":
-        page = add_round_rect(slide, x + 0.06, y, size * 0.76, size, CREAM, GREEN_DARK, 1.4)
+        add_round_rect(slide, x + 0.06, y, size * 0.76, size, CREAM, GREEN_DARK, 1.4)
         for index in range(3):
             add_round_rect(slide, x + 0.18, y + 0.19 + index * 0.16, size * 0.45, 0.05, GREEN_DARK, None)
         return
     add_circle(slide, x, y, size, GREEN)
 
 
-def add_tool_card(
+def add_labeled_icon(
+    slide,
+    x: float,
+    y: float,
+    title: str,
+    body: str,
+    icon: str,
+    accent: str,
+    title_color: str = GREEN_DARK,
+    body_color: str = INK,
+    width: float = 5.65,
+) -> None:
+    """Add an icon and open typography without a surrounding content box."""
+    add_circle(slide, x, y + 0.05, 1.08, accent)
+    add_icon(slide, icon, x + 0.20, y + 0.24, 0.68)
+    add_text(slide, x + 1.34, y, width - 1.34, 0.54, title, 22, title_color, bold=True)
+    add_text(slide, x + 1.34, y + 0.62, width - 1.34, 1.05, body, 17, body_color)
+
+
+def add_technology(
     slide,
     x: float,
     y: float,
@@ -407,13 +429,11 @@ def add_tool_card(
     icon: str,
     accent: str,
 ) -> None:
-    """Add one technology card."""
-    add_round_rect(slide, x + 0.05, y + 0.07, 4.05, 2.45, GREEN_DARK, None).fill.transparency = 87
-    add_round_rect(slide, x, y, 4.05, 2.45, CREAM, GREEN_LINE, 1.0)
-    add_round_rect(slide, x + 0.20, y + 0.20, 0.88, 0.88, accent, None)
-    add_icon(slide, icon, x + 0.31, y + 0.31, 0.65)
-    add_text(slide, x + 1.25, y + 0.22, 2.55, 0.45, title, 18, GREEN_DARK)
-    add_text(slide, x + 1.25, y + 0.72, 2.55, 1.42, body, 13.2, INK)
+    """Add one circular technology node with labels below it."""
+    add_circle(slide, x + 1.34, y, 1.18, accent)
+    add_icon(slide, icon, x + 1.57, y + 0.23, 0.72)
+    add_text(slide, x, y + 1.35, 3.85, 0.46, title, 21, GREEN_DARK, PP_ALIGN.CENTER, bold=True)
+    add_text(slide, x + 0.10, y + 1.88, 3.65, 0.83, body, 15.5, INK, PP_ALIGN.CENTER)
 
 
 def add_flow_node(
@@ -425,13 +445,11 @@ def add_flow_node(
     icon: str,
     accent: str,
 ) -> None:
-    """Add one node in the complete dApp flow."""
-    add_round_rect(slide, x + 0.04, y + 0.06, 2.65, 1.48, GREEN_DARK, None).fill.transparency = 87
-    add_round_rect(slide, x, y, 2.65, 1.48, CREAM, GREEN_LINE, 1.0)
-    add_round_rect(slide, x + 0.15, y + 0.23, 0.72, 0.72, accent, None)
-    add_icon(slide, icon, x + 0.23, y + 0.31, 0.55)
-    add_text(slide, x + 0.97, y + 0.22, 1.48, 0.38, title, 16, GREEN_DARK)
-    add_text(slide, x + 0.97, y + 0.64, 1.48, 0.55, subtitle, 11.5, INK)
+    """Add one circular step in the complete dApp flow."""
+    add_circle(slide, x + 0.67, y, 1.02, accent)
+    add_icon(slide, icon, x + 0.86, y + 0.19, 0.64)
+    add_text(slide, x, y + 1.16, 2.36, 0.42, title, 18.5, GREEN_DARK, PP_ALIGN.CENTER, bold=True)
+    add_text(slide, x, y + 1.62, 2.36, 0.54, subtitle, 14.5, INK, PP_ALIGN.CENTER)
 
 
 def set_notes(slide, text: str) -> None:
@@ -439,170 +457,295 @@ def set_notes(slide, text: str) -> None:
     slide.notes_slide.notes_text_frame.text = text
 
 
-def build_context(slide) -> None:
-    """Slide 1: context using the map and botanical cover artwork."""
-    keep_shapes(slide, set(range(6)))
-    add_title(slide, "Contexto", "Problema e objetivo do projeto", 9.1)
-    add_card(
-        slide,
-        9.35,
-        2.35,
-        9.10,
-        2.45,
-        "Problema",
-        "A cadeia da bioeconomia reúne organizações diferentes. Registros separados dificultam verificar a integridade do histórico e identificar quem executou cada etapa.",
-        ORANGE,
-        23,
-        17,
-    )
-    add_card(
-        slide,
-        9.35,
-        5.25,
-        9.10,
-        2.45,
-        "Objetivo",
-        "Registrar o ciclo do lote em um contrato público. A MetaMask identifica os participantes, o Solidity aplica perfis e estados, e a Sepolia confirma transações e eventos.",
-        GREEN,
-        23,
-        17,
-    )
-    add_pill(slide, 10.80, 8.20, 6.25, 0.62, "Produtor  →  consumidor", YELLOW, GREEN_DARK, 17)
+def build_cover(slide) -> None:
+    """Slide 1: separate cover with project, students and course only."""
+    keep_shapes(slide, set(range(5)))
     add_text(
         slide,
-        9.20,
-        9.35,
-        9.35,
-        0.72,
-        "Ana Beatriz Maciel Nunes   •   Fernando Luiz da Silva Freire   •   Juliana Ballin Lima",
-        13.5,
-        GRAY,
+        4.35,
+        3.08,
+        11.30,
+        1.35,
+        "EcoOrigem",
+        78,
+        CREAM,
         PP_ALIGN.CENTER,
+        TITLE_FONT,
+        0.02,
+        True,
+    )
+    add_text(
+        slide,
+        4.55,
+        4.75,
+        10.90,
+        0.62,
+        "Oficina de Desenvolvimento de Sistemas III",
+        25,
+        YELLOW,
+        PP_ALIGN.CENTER,
+        BODY_FONT,
+        0.02,
+        True,
+    )
+    add_text(
+        slide,
+        4.45,
+        6.20,
+        11.10,
+        1.35,
+        "Ana Beatriz Maciel Nunes\nFernando Luiz da Silva Freire\nJuliana Ballin Lima",
+        22,
+        CREAM,
+        PP_ALIGN.CENTER,
+    )
+    set_notes(slide, "Apresentar o nome do projeto, a disciplina e os integrantes da equipe.")
+
+
+def build_context(slide) -> None:
+    """Slide 2: context using the map and botanical artwork."""
+    keep_shapes(slide, set(range(6)))
+    add_title(slide, "Contexto", "Problema e objetivo do projeto", 8.1)
+
+    add_circle(slide, 9.55, 2.58, 0.62, ORANGE)
+    add_text(slide, 10.48, 2.40, 7.95, 0.58, "O problema", 28, GREEN_DARK, bold=True)
+    add_text(
+        slide,
+        10.48,
+        3.08,
+        7.85,
+        1.68,
+        "Registros separados dificultam verificar a integridade do histórico e identificar quem executou cada etapa da cadeia da bioeconomia.",
+        20,
+        INK,
+    )
+
+    add_circle(slide, 9.55, 5.65, 0.62, GREEN)
+    add_text(slide, 10.48, 5.47, 7.95, 0.58, "O objetivo", 28, GREEN_DARK, bold=True)
+    add_text(
+        slide,
+        10.48,
+        6.15,
+        7.85,
+        2.05,
+        "Registrar o ciclo do lote em um contrato público. A MetaMask identifica os participantes, o Solidity aplica perfis e estados, e a Sepolia confirma transações e eventos.",
+        20,
+        INK,
+    )
+    add_text(
+        slide,
+        10.48,
+        8.72,
+        7.55,
+        0.62,
+        "Produtor  →  consumidor",
+        21,
+        ORANGE,
+        bold=True,
     )
     set_notes(slide, "Apresentar o problema dos registros fragmentados e o objetivo do EcoOrigem. Explicar que a blockchain preserva o registro confirmado, mas não garante a veracidade do dado informado na origem.")
 
 
 def build_first_delivery(slide) -> None:
-    """Slide 2: first delivery inside the original orange card layout."""
-    keep_shapes(slide, {0, 1, 2, 3, 4, 6, 7, 8, 9})
-    add_title(slide, "Primeira Entrega", "Base didática validada em ambiente local", 15.0, GREEN_DARK, GREEN_DARK)
-    add_text(slide, 3.10, 3.53, 13.80, 0.52, "Blockchain local em Python", 25, GREEN_DARK, PP_ALIGN.CENTER)
+    """Slide 3: first delivery inside the original organic composition."""
+    keep_shapes(slide, {0, 1, 2, 3, 4, 7})
+    add_title(
+        slide,
+        "Primeira Entrega",
+        "Base didática validada em ambiente local",
+        15.0,
+        GREEN_DARK,
+        CREAM,
+        46,
+    )
+    add_text(
+        slide,
+        3.10,
+        3.38,
+        13.80,
+        0.60,
+        "Blockchain local em Python",
+        30,
+        GREEN_DARK,
+        PP_ALIGN.CENTER,
+        bold=True,
+    )
     add_text(
         slide,
         3.15,
         4.10,
         13.70,
-        1.05,
+        1.10,
         "Blocos encadeados, prova de trabalho, nonce, SHA-256, raiz de Merkle e carteiras com assinatura digital.",
-        17,
+        19,
         INK,
         PP_ALIGN.CENTER,
     )
     first = [
-        (2.82, "Regras de negócio", "Perfis, custódia e ordem obrigatória do produtor ao distribuidor."),
-        (8.14, "Aplicação web", "Nó HTTP, interface, Docker e mensagens amigáveis para a demonstração."),
-        (13.46, "Qualidade", "268 testes, cenários válidos e inválidos, relatório técnico e evidências."),
+        (2.78, "Regras de negócio", "Perfis, custódia e ordem obrigatória do produtor ao distribuidor.", "contract", PURPLE),
+        (8.10, "Aplicação web", "Nó HTTP, interface, Docker e mensagens amigáveis para a demonstração.", "browser", YELLOW),
+        (13.42, "Qualidade", "268 testes, cenários válidos e inválidos, relatório técnico e evidências.", "etherscan", GREEN),
     ]
-    for x, title, body in first:
-        add_text(slide, x, 6.48, 3.80, 0.58, title, 20, GREEN_DARK, PP_ALIGN.CENTER)
-        add_text(slide, x, 7.25, 3.80, 2.10, body, 15.5, INK, PP_ALIGN.CENTER)
-    add_pill(slide, 6.35, 10.00, 7.30, 0.48, "Resultado: conceito e fluxo comprovados", CREAM, GREEN_DARK, 15)
+    for x, title, body, icon, accent in first:
+        add_circle(slide, x + 1.43, 6.02, 0.98, accent)
+        add_icon(slide, icon, x + 1.62, 6.21, 0.60)
+        add_text(slide, x, 7.14, 3.84, 0.60, title, 22, GREEN_DARK, PP_ALIGN.CENTER, bold=True)
+        add_text(slide, x, 7.90, 3.84, 1.46, body, 17.5, INK, PP_ALIGN.CENTER)
+    add_text(
+        slide,
+        5.40,
+        9.93,
+        9.20,
+        0.55,
+        "Resultado: conceito e fluxo comprovados",
+        18,
+        GREEN_DARK,
+        PP_ALIGN.CENTER,
+        bold=True,
+    )
     set_notes(slide, "Resumir a Primeira Entrega como base conceitual e funcional. Mostrar que o projeto já possuía blockchain, regras, interface, testes e relatório antes da migração para Ethereum.")
 
 
 def build_second_delivery(slide) -> None:
-    """Slide 3: second delivery on the original green background."""
+    """Slide 4: second delivery on the original green background."""
     keep_shapes(slide, {1, 2, 3})
-    add_title(slide, "Segunda Entrega", "Melhorias e novas implementações da dApp pública", 15.0, CREAM, CREAM)
+    add_title(
+        slide,
+        "Segunda Entrega",
+        "Melhorias e novas implementações da dApp pública",
+        15.0,
+        CREAM,
+        YELLOW,
+        46,
+    )
     items = [
         ("Contrato Solidity", "Perfis, estados, eventos, erros e taxa pagável.", "contract", PURPLE),
         ("Ethereum Sepolia", "Estado público e transações consultáveis.", "sepolia", YELLOW),
         ("MetaMask", "Conexão, assinatura e confirmação de transações.", "metamask", ORANGE),
         ("Frontend Web3.js", "Leituras, escritas, eventos e erros tratados.", "web3", YELLOW),
         ("Hash e IPFS", "Prova on-chain com arquivo mantido fora da rede.", "ipfs", GREEN),
-        ("Vercel e testes", "HTTPS, testes locais, Remix e auditoria de segredos.", "vercel", CREAM),
+        ("Vercel e testes", "HTTPS, Remix, testes locais e auditoria de segredos.", "vercel", CREAM),
     ]
-    positions = [(0.85, 2.40), (7.25, 2.40), (13.65, 2.40), (0.85, 6.25), (7.25, 6.25), (13.65, 6.25)]
+    positions = [
+        (0.72, 2.55),
+        (7.15, 2.55),
+        (13.58, 2.55),
+        (0.72, 6.15),
+        (7.15, 6.15),
+        (13.58, 6.15),
+    ]
     for (title, body, icon, accent), (x, y) in zip(items, positions):
-        add_round_rect(slide, x + 0.05, y + 0.07, 5.45, 2.78, GREEN_DARK, None).fill.transparency = 84
-        add_round_rect(slide, x, y, 5.45, 2.78, CREAM, CREAM, 0.8)
-        add_round_rect(slide, x + 0.22, y + 0.25, 0.92, 0.92, accent, None)
-        add_icon(slide, icon, x + 0.34, y + 0.37, 0.67)
-        add_text(slide, x + 1.36, y + 0.27, 3.72, 0.52, title, 20, GREEN_DARK)
-        add_text(slide, x + 0.30, y + 1.35, 4.85, 1.05, body, 14.3, INK)
-    add_pill(slide, 6.75, 9.78, 6.50, 0.52, "Local  →  Ethereum pública de teste", CREAM, GREEN_DARK, 15)
+        add_labeled_icon(slide, x, y, title, body, icon, accent, CREAM, CREAM)
+    add_text(
+        slide,
+        5.45,
+        9.72,
+        9.10,
+        0.54,
+        "Do ambiente local para uma rede Ethereum pública de teste",
+        18,
+        YELLOW,
+        PP_ALIGN.CENTER,
+        bold=True,
+    )
     set_notes(slide, "Apresentar a evolução para Solidity, Sepolia, MetaMask, Web3.js, IPFS e Vercel. Destacar testes e segurança como parte da implementação, não como etapa posterior.")
 
 
 def build_technologies(slide) -> None:
-    """Slide 4: technologies while preserving the original parrot artwork."""
+    """Slide 5: connected technology diagram with the original parrots."""
     keep_shapes(slide, {0})
-    parrot = slide.shapes[0]
-    parrot.left = Inches(17.15)
-    parrot.top = Inches(0.18)
-    parrot.width = Inches(2.65)
-    parrot.height = Inches(2.30)
-    add_title(slide, "IDEs, frameworks e serviços", "Responsabilidade de cada tecnologia no ciclo da dApp", 15.4)
+    parrots = slide.shapes[0]
+    parrots.left = Inches(17.50)
+    parrots.top = Inches(0.10)
+    parrots.width = Inches(2.20)
+    parrots.height = Inches(2.18)
+    add_title(
+        slide,
+        "IDEs, frameworks e serviços",
+        "Como cada tecnologia participa do ciclo da dApp",
+        15.8,
+        title_size=44,
+    )
     tools = [
-        ("Remix IDE", "Importa, compila, testa e envia o deploy.", "remix", GREEN),
-        ("Solidity", "Implementa regras, perfis, estados e eventos.", "solidity", YELLOW),
-        ("MetaMask", "Guarda chaves e solicita assinaturas.", "metamask", ORANGE),
-        ("Sepolia", "Executa e replica o contrato de teste.", "sepolia", GREEN),
-        ("Web3.js 4.x", "Liga o frontend à carteira e à ABI.", "web3", YELLOW),
-        ("IPFS", "Mantém documentos fora da blockchain.", "ipfs", GREEN),
-        ("Vercel", "Publica o frontend estático por HTTPS.", "vercel", CREAM),
-        ("Etherscan", "Confere contrato, blocos, eventos e hashes.", "etherscan", GREEN),
+        ("Remix IDE", "Compila, testa e faz o deploy.", "remix", GREEN),
+        ("Solidity", "Define regras, perfis e eventos.", "solidity", YELLOW),
+        ("MetaMask", "Mantém chaves e assina ações.", "metamask", ORANGE),
+        ("Sepolia", "Executa o contrato de teste.", "sepolia", GREEN),
+        ("Web3.js 4.x", "Conecta o frontend à ABI.", "web3", YELLOW),
+        ("IPFS", "Armazena documentos off-chain.", "ipfs", GREEN),
+        ("Vercel", "Publica o frontend com HTTPS.", "vercel", CREAM),
+        ("Etherscan", "Confere blocos, eventos e hashes.", "etherscan", GREEN),
     ]
-    positions = [(0.72, 2.65), (5.48, 2.65), (10.24, 2.65), (15.00, 2.65), (0.72, 6.15), (5.48, 6.15), (10.24, 6.15), (15.00, 6.15)]
+    positions = [
+        (0.10, 2.72),
+        (5.00, 2.72),
+        (9.90, 2.72),
+        (14.80, 2.72),
+        (0.10, 6.38),
+        (5.00, 6.38),
+        (9.90, 6.38),
+        (14.80, 6.38),
+    ]
+    for y in (3.31, 6.97):
+        add_line(slide, 2.62, y, 6.34, y, GREEN_LINE, 2.2)
+        add_line(slide, 7.52, y, 11.24, y, GREEN_LINE, 2.2)
+        add_line(slide, 12.42, y, 16.14, y, GREEN_LINE, 2.2)
     for (title, body, icon, accent), (x, y) in zip(tools, positions):
-        add_tool_card(slide, x, y, title, body, icon, accent)
-    for x in (4.84, 9.60, 14.36):
-        add_arrow(slide, x, 3.62, 0.42, 0.25, "right")
-        add_arrow(slide, x, 7.12, 0.42, 0.25, "right")
-    add_pill(slide, 6.60, 9.76, 6.80, 0.50, "Código  →  assinatura  →  rede  →  evidência", GREEN, CREAM, 14.5)
-    set_notes(slide, "Percorrer a primeira linha como ciclo de desenvolvimento e a segunda como ciclo de uso e publicação. Explicar que as chaves permanecem na MetaMask e nunca entram no projeto.")
+        add_technology(slide, x, y, title, body, icon, accent)
+    set_notes(slide, "Percorrer a primeira linha como ciclo de desenvolvimento e a segunda como ciclo de integração e publicação. Explicar que as chaves permanecem na MetaMask e nunca entram no projeto.")
 
 
 def build_flow(slide) -> None:
-    """Slide 5: full flow beside the original forest artwork."""
+    """Slide 6: full flow beside the original forest artwork."""
     keep_shapes(slide, {0})
-    add_title(slide, "Fluxo completo da dApp", "Da ação no navegador até a evidência pública", 10.3)
+    add_title(slide, "Fluxo completo da dApp", "Da ação no navegador à evidência pública", 10.0, title_size=44)
     nodes = [
-        (0.75, 2.30, "Pessoa", "preenche e consulta", "person", GREEN),
-        (4.10, 2.30, "Frontend", "Vercel + Web3.js", "browser", YELLOW),
-        (7.45, 2.30, "MetaMask", "conecta e assina", "metamask", ORANGE),
-        (7.45, 4.85, "Contrato", "valida e grava", "contract", GREEN),
-        (4.10, 4.85, "Sepolia", "confirma e replica", "sepolia", YELLOW),
-        (0.75, 4.85, "Etherscan", "expõe a evidência", "etherscan", GREEN),
+        (0.42, 2.35, "Pessoa", "preenche e consulta", "person", GREEN),
+        (3.47, 2.35, "Frontend", "Vercel + Web3.js", "browser", YELLOW),
+        (6.52, 2.35, "MetaMask", "conecta e assina", "metamask", ORANGE),
+        (6.52, 4.78, "Contrato", "valida e grava", "contract", GREEN),
+        (3.47, 4.78, "Sepolia", "confirma e replica", "sepolia", YELLOW),
+        (0.42, 4.78, "Etherscan", "expõe a evidência", "etherscan", GREEN),
     ]
     for x, y, title, subtitle, icon, accent in nodes:
         add_flow_node(slide, x, y, title, subtitle, icon, accent)
-    add_arrow(slide, 3.53, 2.91, 0.40, 0.25, "right")
-    add_arrow(slide, 6.88, 2.91, 0.40, 0.25, "right")
-    add_arrow(slide, 8.55, 4.02, 0.28, 0.56, "down")
-    add_arrow(slide, 6.88, 5.46, 0.40, 0.25, "left")
-    add_arrow(slide, 3.53, 5.46, 0.40, 0.25, "left")
+    add_arrow(slide, 2.84, 2.73, 0.38, 0.24, "right")
+    add_arrow(slide, 5.89, 2.73, 0.38, 0.24, "right")
+    add_arrow(slide, 7.53, 4.05, 0.28, 0.46, "down")
+    add_arrow(slide, 5.89, 5.16, 0.38, 0.24, "left")
+    add_arrow(slide, 2.84, 5.16, 0.38, 0.24, "left")
 
-    add_line(slide, 8.77, 6.34, 8.77, 7.10, ORANGE, 1.7)
-    add_round_rect(slide, 7.48, 7.08, 2.60, 0.78, CREAM, TEAL, 1.2)
-    add_icon(slide, "ipfs", 7.67, 7.17, 0.54)
-    add_text(slide, 8.38, 7.20, 1.45, 0.36, "arquivo no IPFS", 11.5, GREEN_DARK)
+    add_circle(slide, 8.78, 4.90, 0.92, CREAM, TEAL)
+    add_icon(slide, "ipfs", 8.94, 5.06, 0.60)
+    add_text(slide, 8.15, 5.96, 2.15, 0.72, "arquivo no IPFS", 15.5, TEAL, PP_ALIGN.CENTER, bold=True)
+    add_line(slide, 8.18, 5.24, 8.72, 5.24, TEAL, 1.7)
 
-    add_text(slide, 0.82, 8.10, 9.45, 0.42, "Máquina de estados do lote", 18, GREEN_DARK)
+    add_text(slide, 0.68, 7.42, 9.62, 0.46, "Máquina de estados do lote", 21, GREEN_DARK, bold=True)
     states = ["Cadastrado", "Beneficiado", "Transporte", "Distribuído", "Finalizado"]
-    state_x = [0.75, 2.75, 4.75, 6.75, 8.75]
+    state_x = [0.76, 2.66, 4.56, 6.46, 8.36]
     for index, (state, x) in enumerate(zip(states, state_x)):
-        add_pill(slide, x, 8.65, 1.75, 0.66, state, CREAM if index % 2 == 0 else YELLOW, GREEN_DARK, 12.2)
+        add_circle(slide, x, 8.30, 0.62, CREAM if index % 2 == 0 else YELLOW, GREEN_LINE)
+        add_text(slide, x - 0.62, 9.04, 1.85, 0.40, state, 13, GREEN_DARK, PP_ALIGN.CENTER, bold=True)
         if index < 4:
-            add_arrow(slide, x + 1.78, 8.87, 0.19, 0.20, "right")
-    add_text(slide, 0.82, 9.80, 9.25, 0.48, "Operações fora do perfil ou da ordem são recusadas sem alterar o estado.", 13.2, GRAY, PP_ALIGN.CENTER)
+            add_line(slide, x + 0.64, 8.61, x + 1.86, 8.61, GREEN_LINE, 1.7)
+    add_text(
+        slide,
+        0.70,
+        9.80,
+        9.55,
+        0.66,
+        "Operações fora do perfil ou da ordem são recusadas sem alterar o estado.",
+        15,
+        GRAY,
+        PP_ALIGN.CENTER,
+    )
     set_notes(slide, "Explicar o fluxo em serpentina: pessoa, frontend, MetaMask, contrato, Sepolia e Etherscan. O IPFS guarda o arquivo; hash e URI ficam no contrato. Finalizar com os cinco estados obrigatórios.")
 
 
 def build_demo(slide) -> None:
-    """Slide 6: live demo list beside the original jungle artwork."""
+    """Slide 7: live demo list beside the original jungle artwork."""
     keep_shapes(slide, {0})
-    add_title(slide, "Demonstração ao vivo", "O que será mostrado e onde", 10.2)
+    add_title(slide, "Demonstração ao vivo", "O que será mostrado e onde", 10.0, title_size=44)
     rows = [
         ("01", "Conectar e autenticar a carteira", "Vercel + MetaMask", GREEN),
         ("02", "Ler totais, perfil e lotes com call", "Frontend", YELLOW),
@@ -612,51 +755,109 @@ def build_demo(slide) -> None:
     ]
     y = 2.35
     for number, action, place, accent in rows:
-        add_round_rect(slide, 0.92, y, 9.05, 1.15, CREAM, GREEN_LINE, 1.0)
-        circle = add_circle(slide, 1.15, y + 0.20, 0.74, accent)
-        style_text(circle, number, 14, GREEN_DARK, PP_ALIGN.CENTER, BODY_FONT, 0.01)
-        add_text(slide, 2.10, y + 0.16, 5.20, 0.74, action, 16, GREEN_DARK)
-        add_pill(slide, 7.35, y + 0.27, 2.30, 0.58, place, GREEN, CREAM, 11.5)
-        y += 1.47
-    add_text(slide, 1.05, 9.90, 8.75, 0.43, "Plano B: vídeo e capturas reais, sem novo deploy durante a apresentação.", 12.5, GRAY, PP_ALIGN.CENTER)
+        circle = add_circle(slide, 0.92, y + 0.06, 0.82, accent)
+        style_text(circle, number, 15, GREEN_DARK, PP_ALIGN.CENTER, BODY_FONT, 0.01, True)
+        add_text(slide, 2.02, y, 7.82, 0.58, action, 20, GREEN_DARK, bold=True)
+        add_text(slide, 2.04, y + 0.60, 6.90, 0.40, place, 16, ORANGE, bold=True)
+        y += 1.46
+    add_text(
+        slide,
+        1.00,
+        9.82,
+        8.92,
+        0.58,
+        "Plano B: vídeo e capturas reais, sem novo deploy durante a apresentação.",
+        15,
+        GRAY,
+        PP_ALIGN.CENTER,
+    )
     set_notes(slide, "Executar a demonstração pela URL da Vercel e pelo contrato já implantado. Mostrar leitura, escrita pagável, confirmação, erro compreensível e evento no Etherscan.")
 
 
 def build_bonus(slide) -> None:
-    """Slide 7: report evidence over the original pond scene."""
+    """Slide 8: report evidence over the original pond scene."""
     keep_shapes(slide, {0})
-    add_title(slide, "Bônus: relatório de desenvolvimento", "Evidência técnica da evolução do projeto", 11.5)
-    frame = add_round_rect(slide, 0.83, 2.13, 5.35, 7.62, WHITE, GREEN_LINE, 1.2)
-    frame.adjustments[0] = 0.04
+    artwork = slide.shapes[0]
+    artwork.left = Inches(11.50)
+    artwork.top = Inches(0)
+    add_title(
+        slide,
+        "Bônus: relatório de desenvolvimento",
+        "Evidência técnica da evolução do projeto",
+        11.8,
+        title_size=40,
+    )
+    add_oval(slide, 0.48, 2.18, 5.88, 7.50, GREEN, 58)
     slide.shapes.add_picture(
         str(REPORT_IMAGE),
-        Inches(1.10),
-        Inches(2.40),
-        width=Inches(4.81),
-        height=Inches(6.81),
+        Inches(0.92),
+        Inches(2.42),
+        width=Inches(4.92),
+        height=Inches(6.96),
     )
-    add_card(slide, 6.55, 2.40, 5.20, 1.75, "Relatório técnico", "21 páginas preservadas em PDF e DOCX.", GREEN, 19, 14.5)
-    add_card(slide, 6.55, 4.65, 5.20, 1.75, "Conteúdo", "Arquitetura, decisões, testes, segurança e limitações.", ORANGE, 19, 14.5)
-    add_card(slide, 6.55, 6.90, 5.20, 1.75, "Valor para a Entrega 2", "Documenta a base que originou a migração para Ethereum.", YELLOW, 19, 14.5)
-    add_pill(slide, 1.10, 9.68, 10.65, 0.50, "docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf", GREEN, CREAM, 13.5)
+    callouts = [
+        (2.67, GREEN, "Relatório técnico", "21 páginas preservadas em PDF e DOCX."),
+        (5.10, ORANGE, "Conteúdo", "Arquitetura, decisões, testes, segurança e limitações."),
+        (7.53, YELLOW, "Valor para a Entrega 2", "Documenta a base que originou a migração para Ethereum."),
+    ]
+    for y, accent, title, body in callouts:
+        add_circle(slide, 6.38, y, 0.76, accent)
+        add_text(slide, 7.42, y - 0.08, 4.18, 0.50, title, 22, GREEN_DARK, bold=True)
+        add_text(slide, 7.42, y + 0.53, 4.18, 1.04, body, 17, INK)
+    add_text(
+        slide,
+        0.75,
+        9.83,
+        10.85,
+        0.50,
+        "docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf",
+        15,
+        GREEN_DARK,
+        PP_ALIGN.CENTER,
+        bold=True,
+    )
     set_notes(slide, "Mostrar o print real de uma página do relatório. Explicar que o documento registra a arquitetura, as decisões e os testes da Primeira Entrega, servindo como evidência da evolução.")
 
 
 def build_thanks(slide) -> None:
-    """Slide 8: thanks using the original final botanical composition."""
-    keep_shapes(slide, {0, 2, 3, 4, 5, 6, 7})
-    add_text(slide, 5.00, 1.08, 10.00, 0.98, "EcoOrigem", 48, CREAM, PP_ALIGN.CENTER, TITLE_FONT)
-    add_text(slide, 5.35, 4.48, 9.30, 0.88, "Obrigada", 44, GREEN_DARK, PP_ALIGN.CENTER, TITLE_FONT)
-    add_text(slide, 5.35, 5.46, 9.30, 0.52, "Perguntas?", 23, GREEN_DARK, PP_ALIGN.CENTER, TITLE_FONT)
-    add_text(slide, 5.15, 6.30, 9.70, 0.56, "Ana Beatriz   •   Fernando Luiz   •   Juliana Ballin", 14.5, GRAY, PP_ALIGN.CENTER)
-    add_pill(slide, 6.25, 7.18, 7.50, 0.58, "github.com/JulianaBallin/EcoOrigem", GREEN_DARK, CREAM, 14)
-    slide.shapes.add_picture(str(UEA_LOGO), Inches(8.30), Inches(9.16), width=Inches(3.40), height=Inches(1.13))
+    """Slide 9: thanks using the original final botanical composition."""
+    keep_shapes(slide, {2, 3, 4, 5, 6, 7})
+    add_text(slide, 4.70, 2.25, 10.60, 0.60, "EcoOrigem", 29, YELLOW, PP_ALIGN.CENTER, TITLE_FONT, bold=True)
+    add_text(
+        slide,
+        4.45,
+        3.43,
+        11.10,
+        1.25,
+        "Obrigada",
+        72,
+        CREAM,
+        PP_ALIGN.CENTER,
+        TITLE_FONT,
+        0.02,
+        True,
+    )
+    add_text(slide, 5.00, 5.05, 10.00, 0.65, "Perguntas?", 30, CREAM, PP_ALIGN.CENTER, TITLE_FONT, bold=True)
+    add_text(
+        slide,
+        5.05,
+        6.32,
+        9.90,
+        0.52,
+        "github.com/JulianaBallin/EcoOrigem",
+        18,
+        YELLOW,
+        PP_ALIGN.CENTER,
+        bold=True,
+    )
+    slide.shapes.add_picture(str(UEA_LOGO), Inches(8.30), Inches(8.90), width=Inches(3.40), height=Inches(1.13))
     set_notes(slide, "Agradecer, manter o repositório visível e abrir espaço para a arguição.")
 
 
 def validate_deck(prs: Presentation) -> None:
-    """Enforce slide count, title order, text weight, rotation and safe margins."""
+    """Enforce slide count, title order, hierarchy, rotation and safe margins."""
     expected = [
+        "EcoOrigem",
         "Contexto",
         "Primeira Entrega",
         "Segunda Entrega",
@@ -667,10 +868,11 @@ def validate_deck(prs: Presentation) -> None:
         "Obrigada",
     ]
     if len(prs.slides) != len(expected):
-        raise RuntimeError(f"Esperados 8 slides, encontrados {len(prs.slides)}.")
+        raise RuntimeError(f"Esperados 9 slides, encontrados {len(prs.slides)}.")
 
     for slide_number, (slide, title) in enumerate(zip(prs.slides, expected), start=1):
         texts = []
+        title_is_bold = False
         for shape in iter_shapes(slide.shapes):
             if not getattr(shape, "has_text_frame", False):
                 continue
@@ -687,19 +889,20 @@ def validate_deck(prs: Presentation) -> None:
                     )
             for paragraph in shape.text_frame.paragraphs:
                 for run in paragraph.runs:
-                    if run.font.bold is True:
-                        raise RuntimeError(
-                            f"Negrito encontrado no slide {slide_number}: {run.text!r}"
-                        )
+                    if text == title and run.font.bold is True:
+                        title_is_bold = True
         if title not in texts:
             raise RuntimeError(f"Título ausente no slide {slide_number}: {title}")
+        if not title_is_bold:
+            raise RuntimeError(f"Título sem peso forte no slide {slide_number}: {title}")
 
 
 def build() -> None:
     """Build, validate and export the deck."""
     prs = Presentation(TEMPLATE)
-    select_template_slides(prs, [0, 2, 5, 4, 3, 7, 8, 10])
+    select_template_slides(prs, [1, 0, 2, 5, 4, 3, 7, 8, 10])
     builders = [
+        build_cover,
         build_context,
         build_first_delivery,
         build_second_delivery,
