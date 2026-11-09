@@ -3,7 +3,7 @@ pragma solidity ^0.8.24;
 
 import "remix_tests.sol";
 import "remix_accounts.sol";
-import "../contracts/EcoOrigem.sol";
+import "../../contracts/EcoOrigem.sol";
 
 contract EcoOrigemTest {
     EcoOrigem private ecoOrigem;

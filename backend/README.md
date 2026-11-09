@@ -2,6 +2,22 @@
 
 O contrato [`EcoOrigem.sol`](contracts/EcoOrigem.sol) implementa rastreabilidade por perfis, custódia designada e máquina de estados. A conta que implanta torna-se `owner` e `treasury`, ambas imutáveis.
 
+## Organização do backend Solidity
+
+```text
+backend/
+├── config/
+│   └── solidity-compiler.json
+├── contracts/
+│   └── EcoOrigem.sol
+└── tests/
+    ├── contract.test.mjs
+    └── solidity/
+        └── EcoOrigem_test.sol
+```
+
+`contracts/EcoOrigem.sol` é a única fonte do contrato. O teste JavaScript implanta essa fonte em uma rede Ganache isolada; o teste Solidity importa o mesmo arquivo quando executado pelo plugin Solidity Unit Testing do Remix. Ao clonar o repositório pelo Git no Remix, o arquivo [`remix.config.json`](../remix.config.json) da raiz aplica optimizer de 200 runs e EVM Paris usando a configuração mantida em `backend/config/`.
+
 ## Perfis
 
 | Valor | Perfil | Responsabilidade |

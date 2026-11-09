@@ -19,7 +19,7 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help menu install compile remix abi configure test validate security check serve clean
+.PHONY: help menu install compile abi configure test validate security check serve clean
 
 help: ## Lista os comandos disponíveis
 	@printf "$(C_OK)EcoOrigem - dApp Ethereum Sepolia$(C_RESET)\n\n"
@@ -34,9 +34,6 @@ install: ## Instala exatamente as dependências registradas no lockfile
 
 compile: ## Compila backend/contracts/EcoOrigem.sol com Solidity 0.8.34
 	$(NPM) run compile
-
-remix: ## Prepara a pasta completa para importar no Remix IDE
-	$(NPM) run prepare:remix
 
 abi: ## Compila o contrato e sincroniza a ABI do frontend
 	$(NPM) run sync:abi

@@ -1,4 +1,4 @@
 {
   "project": "EcoOrigem",
-  "solidity-compiler": "remix/compiler_config.json"
+  "solidity-compiler": "backend/config/solidity-compiler.json"
 }

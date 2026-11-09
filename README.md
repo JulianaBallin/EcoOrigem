@@ -70,9 +70,9 @@ Frontend estático na Vercel ── Web3.js 4.x ── MetaMask
 
 | Camada | Responsabilidade |
 | --- | --- |
-| [Backend Solidity](backend/contracts/EcoOrigem.sol) | Perfis, custódia, máquina de estados, taxa, documentos, eventos e administração |
+| [Backend Solidity](backend/) | Contrato canônico, configuração do compilador e testes locais e do Remix |
 | [Frontend](frontend/) | Conexão, autenticação por assinatura, consultas, transações, eventos e mensagens de erro |
-| [Workspace Remix](remix/) | Cópia sincronizada do contrato, configuração reproduzível e testes Solidity |
+| [Remix via GitHub](remix.config.json) | Abre diretamente o contrato e os testes do backend, sem manter uma cópia duplicada |
 | MetaMask | Mantém as chaves fora da aplicação, assina o desafio e confirma transações |
 | Ethereum Sepolia | Executa o contrato, confirma transações e replica o estado público |
 | IPFS | Armazena opcionalmente documentos; o contrato guarda somente hash e URI |
@@ -154,8 +154,14 @@ O frontend usa HTML, CSS e JavaScript puros, como nos exemplos de Mural do mater
 ```text
 EcoOrigem/
 ├── backend/
-│   ├── contracts/EcoOrigem.sol       # contrato atual da Entrega 2
-│   ├── tests/contract.test.mjs        # integração local com Ganache
+│   ├── config/
+│   │   └── solidity-compiler.json     # optimizer, runs e EVM usados no Remix
+│   ├── contracts/
+│   │   └── EcoOrigem.sol              # fonte canônica da Entrega 2
+│   ├── tests/
+│   │   ├── contract.test.mjs          # integração local com Ganache
+│   │   └── solidity/
+│   │       └── EcoOrigem_test.sol     # testes do plugin Solidity Unit Testing
 │   └── python/                        # implementação didática da Entrega 1
 ├── frontend/
 │   ├── assets/
@@ -165,11 +171,6 @@ EcoOrigem/
 │   ├── app.js
 │   ├── utils.js
 │   └── contract.js                    # ABI e dados do deploy
-├── remix/
-│   ├── contracts/EcoOrigem.sol        # cópia gerada do contrato principal
-│   ├── tests/EcoOrigem_test.sol       # testes executáveis no Remix
-│   ├── compiler_config.json
-│   └── remix.config.json
 ├── scripts/                            # compilação, validação e segurança
 ├── docs/
 │   ├── assets/
@@ -178,10 +179,11 @@ EcoOrigem/
 ├── TESTES.md
 ├── Makefile
 ├── package.json
+├── remix.config.json                   # aponta o Remix para a configuração do backend
 └── vercel.json
 ```
 
-O diretório `docs/` contém somente recursos visuais, relatório e apresentação. O roteiro de testes público permanece na raiz; os procedimentos operacionais pessoais de deploy e demonstração não são versionados.
+O contrato existe em um único local: `backend/contracts/EcoOrigem.sol`. Ao clonar o repositório pelo Git no Remix, abra esse arquivo e execute os testes em `backend/tests/solidity/`. O diretório `docs/` contém somente recursos visuais, relatório e apresentação. O roteiro de testes público permanece na raiz; os procedimentos operacionais pessoais de deploy e demonstração não são versionados.
 
 ## Executar localmente
 
@@ -200,10 +202,9 @@ Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carte
 | Comando | Função |
 | --- | --- |
 | `make compile` | Compila com Solidity 0.8.34, optimizer de 200 runs e EVM Paris |
-| `make remix` | Atualiza a pasta completa que pode ser importada no Remix |
 | `make abi` | Compila e sincroniza a ABI em `frontend/contract.js` |
 | `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
-| `make check` | Prepara o Remix, compila, sincroniza ABI, valida e testa |
+| `make check` | Compila, sincroniza ABI, valida segurança e executa os testes |
 | `make security` | Procura credenciais e audita as dependências locais |
 
 ## Testes e demonstração
