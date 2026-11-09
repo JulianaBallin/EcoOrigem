@@ -4,7 +4,7 @@ Execute os cenários primeiro em ambiente local e depois pela URL final da Verce
 
 ## Preparação
 
-1. Confirme que o contrato foi implantado e configurado conforme [DEPLOY.md](DEPLOY.md).
+1. Confirme que o contrato foi implantado na Sepolia e que endereço, bloco e hash públicos estão configurados em `frontend/contract.js`.
 2. Deixe cinco contas MetaMask prontas: Proprietário, Produtor, Beneficiador, Transportador e Distribuidor.
 3. Garanta SepoliaETH em todas as contas que enviarão transações.
 4. Abra a dApp publicada por HTTPS ou execute `make serve`.

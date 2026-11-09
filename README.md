@@ -39,7 +39,7 @@ Os artefatos locais estão prontos e validados. As ações abaixo exigem a MetaM
 | dApp na Vercel | Pendente de vincular o repositório | URL: `PENDENTE` |
 | Vídeo de 3 a 5 minutos | Pendente após a publicação | URL: `PENDENTE` |
 
-O procedimento público está em [DEPLOY.md](DEPLOY.md). Depois do deploy, registre endereço, bloco e hash no frontend:
+Depois do deploy confirmado pela equipe, registre endereço, bloco e hash públicos no frontend:
 
 ```bash
 make configure ADDRESS=0x... BLOCK=123456 TX=0x...
@@ -175,15 +175,13 @@ EcoOrigem/
 │   ├── assets/
 │   ├── relatorio/
 │   └── slides/
-├── DEPLOY.md
 ├── TESTES.md
-├── DEMONSTRACAO.md
 ├── Makefile
 ├── package.json
 └── vercel.json
 ```
 
-O diretório `docs/` contém somente recursos visuais, relatório e apresentação. Os documentos operacionais ficam na raiz para manter a organização solicitada.
+O diretório `docs/` contém somente recursos visuais, relatório e apresentação. O roteiro de testes público permanece na raiz; os procedimentos operacionais pessoais de deploy e demonstração não são versionados.
 
 ## Executar localmente
 
@@ -218,7 +216,7 @@ make check
 make security
 ```
 
-Use [TESTES.md](TESTES.md) para reproduzir os cenários e [DEMONSTRACAO.md](DEMONSTRACAO.md) para ensaiar a demonstração de cinco minutos.
+Use [TESTES.md](TESTES.md) para reproduzir os cenários. O ensaio da demonstração deve seguir as notas da apresentação e o guia operacional mantido somente no ambiente local.
 
 ## Segurança e dados sensíveis
 
@@ -233,10 +231,8 @@ Use [TESTES.md](TESTES.md) para reproduzir os cenários e [DEMONSTRACAO.md](DEMO
 
 | Item | Conteúdo |
 | --- | --- |
-| [Implantação](DEPLOY.md) | Procedimento público de Sepolia, Etherscan, frontend e Vercel |
 | [Contrato](backend/README.md) | Regras, perfis, estados, eventos, erros e segurança |
 | [Roteiro de testes](TESTES.md) | Cenários válidos, inválidos, administrativos e responsivos |
-| [Demonstração](DEMONSTRACAO.md) | Sequência de cinco minutos e plano de contingência |
 | [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | Oito slides para a apresentação |
 | [Apresentação editável](docs/slides/apresentacao-ecoorigem.pptx) | PPTX com notas de fala |
 | [Relatório PDF](docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf) | Relatório técnico da Primeira Entrega preservado como evidência |
