@@ -205,7 +205,6 @@ Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carte
 | `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
 | `make check` | Prepara o Remix, compila, sincroniza ABI, valida e testa |
 | `make security` | Procura credenciais e audita as dependências locais |
-| `make slides` | Regenera a apresentação PPTX e PDF |
 
 ## Testes e demonstração
 

@@ -4,8 +4,6 @@ NODE        ?= node
 NPM         ?= npm
 PYTHON      ?= python3
 PORT        ?= 8000
-DOCS_VENV   ?= .venv-docs
-DOCS_PY     := $(DOCS_VENV)/bin/python
 
 ifdef NO_COLOR
 C_OK :=
@@ -21,7 +19,7 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help menu install compile remix abi configure test validate security check serve slides clean
+.PHONY: help menu install compile remix abi configure test validate security check serve clean
 
 help: ## Lista os comandos disponíveis
 	@printf "$(C_OK)EcoOrigem - dApp Ethereum Sepolia$(C_RESET)\n\n"
@@ -63,13 +61,5 @@ serve: ## Serve o frontend em http://127.0.0.1:8000 (altere com PORT=...)
 	@printf "$(C_STEP)Abra http://127.0.0.1:$(PORT) em um navegador com MetaMask.$(C_RESET)\n"
 	$(PYTHON) -m http.server $(PORT) --directory frontend --bind 127.0.0.1
 
-$(DOCS_PY):
-	$(PYTHON) -m venv $(DOCS_VENV)
-	$(DOCS_PY) -m pip install --quiet --upgrade pip
-	$(DOCS_PY) -m pip install --quiet -r requirements-docs.txt
-
-slides: $(DOCS_PY) ## Atualiza PPTX e PDF usando o design da Entrega 1
-	$(DOCS_PY) scripts/build_slides.py
-
 clean: ## Remove artefatos reproduzíveis e caches locais
-	rm -rf build node_modules $(DOCS_VENV)
+	rm -rf build node_modules

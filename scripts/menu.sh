@@ -8,7 +8,6 @@ while true; do
   printf '  3) Executar todos os testes\n'
   printf '  4) Validar contrato, frontend e segurança\n'
   printf '  5) Servir o frontend localmente\n'
-  printf '  6) Gerar apresentação\n'
   printf '  0) Sair\n'
   read -r -p 'Escolha: ' option
 
@@ -18,7 +17,6 @@ while true; do
     3) make test ;;
     4) make check && make security ;;
     5) make serve ;;
-    6) make slides ;;
     0) exit 0 ;;
     *) printf 'Opção inválida.\n' ;;
   esac

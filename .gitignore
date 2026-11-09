@@ -30,3 +30,5 @@ npm-debug.log*
 # Python usado apenas para gerar os slides
 __pycache__/
 *.py[cod]
+scripts/build_slides.py
+requirements-docs.txt
