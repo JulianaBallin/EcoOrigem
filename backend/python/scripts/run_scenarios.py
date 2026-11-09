@@ -2,11 +2,11 @@
 
 Every scenario is executed for real (signed transactions, contract rules,
 mining and validation). The expected outcome is declared here and compared with
-the obtained one. The result is written as a Markdown table used as evidence in
-the delivery (``docs/evidencias/cenarios-de-teste.md``).
+the obtained one. The result is written to the ignored local data directory so
+the simulation never adds generated evidence to the repository.
 """
 
-# pylint: disable=duplicate-code,line-too-long
+# pylint: disable=duplicate-code,line-too-long,wrong-import-position
 from __future__ import annotations
 
 import argparse
@@ -17,11 +17,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
 from ecoorigem.blockchain import TX_CALL, TX_DEPLOY, Transaction, Wallet
 from ecoorigem.errors import EcoOrigemError
 from ecoorigem.node import LedgerNode, LedgerStore
 
-ROOT = Path(__file__).resolve().parents[1]
 CONFIRMED = "confirmada"
 DOC_HASH = "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08"
 OTHER_HASH = "60303ae22b998861bce3b28f33eec1be758a213c86c93c076dbe9f558c11c752"
@@ -614,7 +617,7 @@ def main() -> int:
     parser.add_argument(
         "--output",
         type=Path,
-        default=ROOT / "docs" / "evidencias" / "cenarios-de-teste.md",
+        default=ROOT / "data" / "cenarios-de-teste.md",
     )
     args = parser.parse_args()
     with tempfile.TemporaryDirectory() as directory:
