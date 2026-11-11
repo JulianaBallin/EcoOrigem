@@ -362,7 +362,7 @@ contract EcoOrigem {
         uint256 amount = address(this).balance;
         require(amount > 0, "Sem saldo para sacar");
 
-        // Efeitos antes da interação externa evitam reentrância sobre estado mutável.
+        // Só a tesouraria imutável recebe o saldo.
         (bool success, ) = treasury.call{value: amount}("");
         if (!success) {
             revert TransferFailed();
@@ -370,9 +370,9 @@ contract EcoOrigem {
         emit FeesWithdrawn(treasury, amount);
     }
 
-    /// @notice Informa se uma carteira possui um perfil.
+    /// @notice Informa se uma carteira possui um perfil. O dono só administra.
     function hasRole(address account, Role role) public view returns (bool) {
-        return account == owner || roles[account][role];
+        return roles[account][role];
     }
 
     /// @notice Retorna o total de lotes cadastrados.

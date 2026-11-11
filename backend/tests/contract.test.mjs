@@ -34,6 +34,13 @@ test("executa o fluxo completo, permissões, exceções, eventos e taxas", async
   assert.equal(await contract.methods.totalLots().call(), 0n);
   assert.equal(await contract.methods.statusLabel(2).call(), "Em transporte");
 
+  assert.equal(await contract.methods.hasRole(owner, 1).call(), false);
+  await expectRevert(
+    contract.methods
+      .registerLot("Acai", "Manaus", 1000, Math.floor(Date.now() / 1000) - 3600, owner)
+      .send({ from: owner, value: "10000000000000", gas: "500000" }),
+  );
+
   for (const [account, role] of [
     [producer, 1],
     [processor, 2],

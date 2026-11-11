@@ -16,7 +16,7 @@ backend/
         └── EcoOrigem_test.sol
 ```
 
-`contracts/EcoOrigem.sol` é a única fonte do contrato. O teste JavaScript implanta essa fonte em uma rede Ganache isolada; o teste Solidity importa o mesmo arquivo quando executado pelo plugin Solidity Unit Testing do Remix. Ao clonar o repositório pelo Git no Remix, o arquivo [`remix.config.json`](../remix.config.json) da raiz aplica optimizer de 200 runs e EVM Paris usando a configuração mantida em `backend/config/`.
+`contracts/EcoOrigem.sol` é a única fonte do contrato. O teste JavaScript implanta essa fonte em uma rede Ganache isolada; o teste Solidity importa o mesmo arquivo quando executado pelo plugin Solidity Unit Testing do Remix. A configuração do compilador (optimizer 200 runs e EVM Paris) fica em `config/solidity-compiler.json`. No Remix, marque **Use configuration file** no Solidity Compiler e aponte para esse arquivo, ou ajuste os campos manualmente.
 
 ## Perfis
 

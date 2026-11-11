@@ -7,7 +7,7 @@ const required = [
   "frontend/style.css",
   "frontend/app.js",
   "frontend/utils.js",
-  "frontend/contract.js",
+  "frontend/contrato.js",
   "frontend/assets/logo.png",
   "frontend/assets/favicon.png",
 ];

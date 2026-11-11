@@ -3,7 +3,7 @@ import path from "node:path";
 import process from "node:process";
 
 const root = process.cwd();
-const configPath = path.join(root, "frontend", "contract.js");
+const configPath = path.join(root, "frontend", "contrato.js");
 const artifact = JSON.parse(
   fs.readFileSync(path.join(root, "build", "EcoOrigem.json"), "utf8"),
 );

@@ -72,7 +72,6 @@ Frontend estático na Vercel ── Web3.js 4.x ── MetaMask
 | --- | --- |
 | [Backend Solidity](backend/) | Contrato canônico, configuração do compilador e testes locais e do Remix |
 | [Frontend](frontend/) | Conexão, autenticação por assinatura, consultas, transações, eventos e mensagens de erro |
-| [Remix via GitHub](remix.config.json) | Abre diretamente o contrato e os testes do backend, sem manter uma cópia duplicada |
 | MetaMask | Mantém as chaves fora da aplicação, assina o desafio e confirma transações |
 | Ethereum Sepolia | Executa o contrato, confirma transações e replica o estado público |
 | IPFS | Armazena opcionalmente documentos; o contrato guarda somente hash e URI |
@@ -162,7 +161,6 @@ EcoOrigem/
 │   │   ├── contract.test.mjs          # integração local com Ganache
 │   │   └── solidity/
 │   │       └── EcoOrigem_test.sol     # testes do plugin Solidity Unit Testing
-│   └── python/                        # implementação didática da Entrega 1
 ├── frontend/
 │   ├── assets/
 │   ├── tests/utils.test.mjs
@@ -170,7 +168,7 @@ EcoOrigem/
 │   ├── style.css
 │   ├── app.js
 │   ├── utils.js
-│   └── contract.js                    # ABI e dados do deploy
+│   └── contrato.js                    # ABI e dados do deploy
 ├── scripts/                            # compilação, validação e segurança
 ├── docs/
 │   ├── assets/
@@ -179,7 +177,6 @@ EcoOrigem/
 ├── TESTES.md
 ├── Makefile
 ├── package.json
-├── remix.config.json                   # aponta o Remix para a configuração do backend
 └── vercel.json
 ```
 
@@ -202,7 +199,7 @@ Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carte
 | Comando | Função |
 | --- | --- |
 | `make compile` | Compila com Solidity 0.8.34, optimizer de 200 runs e EVM Paris |
-| `make abi` | Compila e sincroniza a ABI em `frontend/contract.js` |
+| `make abi` | Compila e sincroniza a ABI em `frontend/contrato.js` |
 | `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
 | `make check` | Compila, sincroniza ABI, valida segurança e executa os testes |
 | `make security` | Procura credenciais e audita as dependências locais |

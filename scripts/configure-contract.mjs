@@ -17,11 +17,11 @@ if (!/^0x[0-9a-fA-F]{64}$/.test(transaction || "")) {
   process.exit(1);
 }
 
-const configPath = path.join(process.cwd(), "frontend", "contract.js");
+const configPath = path.join(process.cwd(), "frontend", "contrato.js");
 let contents = fs.readFileSync(configPath, "utf8");
 contents = contents
   .replace(/export const CONTRACT_ADDRESS = [^;]+;/, `export const CONTRACT_ADDRESS = "${address}";`)
   .replace(/export const DEPLOYMENT_BLOCK = [^;]+;/, `export const DEPLOYMENT_BLOCK = ${block};`)
   .replace(/export const DEPLOYMENT_TX = [^;]+;/, `export const DEPLOYMENT_TX = "${transaction}";`);
 fs.writeFileSync(configPath, contents);
-console.log("Dados da implantação registrados em frontend/contract.js.");
+console.log("Dados da implantação registrados em frontend/contrato.js.");

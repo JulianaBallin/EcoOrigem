@@ -33,11 +33,11 @@ contract EcoOrigemTest {
         Assert.equal(ecoOrigem.paused(), false, "O contrato deve iniciar ativo");
     }
 
-    function ownerHasEveryRole() public {
+    function ownerHasNoOperationalRole() public {
         Assert.equal(
             ecoOrigem.hasRole(address(this), EcoOrigem.Role.Producer),
-            true,
-            "O proprietario deve possuir os perfis operacionais"
+            false,
+            "O proprietario apenas administra, sem perfil implicito"
         );
     }
 

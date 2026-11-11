@@ -9,7 +9,7 @@
     "compile": "node scripts/compile-contract.mjs",
     "sync:abi": "npm run compile && node scripts/sync-contract-config.mjs",
     "configure:contract": "node scripts/configure-contract.mjs",
-    "lint": "node --check frontend/app.js && node --check frontend/utils.js && node --check frontend/contract.js && node --check scripts/check-secrets.mjs && node --check scripts/compile-contract.mjs && node --check scripts/configure-contract.mjs && node --check scripts/security-audit.mjs && node --check scripts/sync-contract-config.mjs && node --check scripts/validate-frontend.mjs",
+    "lint": "node --check frontend/app.js && node --check frontend/utils.js && node --check frontend/contrato.js && node --check scripts/check-secrets.mjs && node --check scripts/compile-contract.mjs && node --check scripts/configure-contract.mjs && node --check scripts/security-audit.mjs && node --check scripts/sync-contract-config.mjs && node --check scripts/validate-frontend.mjs",
     "security": "node scripts/check-secrets.mjs && node scripts/security-audit.mjs",
     "test": "npm run compile && node --test backend/tests/*.test.mjs frontend/tests/*.test.mjs",
     "check": "npm run compile && node scripts/sync-contract-config.mjs && npm run lint && node scripts/validate-frontend.mjs && node scripts/check-secrets.mjs && node --test backend/tests/*.test.mjs frontend/tests/*.test.mjs"

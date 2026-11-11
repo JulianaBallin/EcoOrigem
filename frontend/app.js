@@ -2,7 +2,7 @@ import {
   CONTRACT_ABI,
   CONTRACT_ADDRESS,
   DEPLOYMENT_BLOCK,
-} from "./contract.js";
+} from "./contrato.js";
 import {
   ROLE,
   ROLE_LABELS,
@@ -284,10 +284,6 @@ async function refreshContractData() {
 
 async function loadRoles() {
   if (!state.account) return;
-  if (sameAddress(state.account, state.owner)) {
-    byId("roles-value").textContent = "Administrador";
-    return;
-  }
   const values = await Promise.all(
     [ROLE.PRODUCER, ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR].map((role) =>
       state.contract.methods.hasRole(state.account, role).call(),
@@ -296,6 +292,7 @@ async function loadRoles() {
   const roles = values
     .map((enabled, index) => (enabled ? ROLE_LABELS[index + 1] : null))
     .filter(Boolean);
+  if (sameAddress(state.account, state.owner)) roles.unshift("Administrador");
   byId("roles-value").textContent = roles.join(" · ") || "Sem perfil operacional";
 }
 
