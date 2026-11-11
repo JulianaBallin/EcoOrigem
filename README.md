@@ -1,267 +1,263 @@
 <p align="center">
-  <img src="assets/img/ecoorigem-logo.png" alt="EcoOrigem" width="620" />
+  <img src="frontend/assets/ecoorigem-logo.png" alt="EcoOrigem" width="620">
 </p>
 
 <p align="center">
-  Rastreabilidade de produtos da bioeconomia amazônica em uma blockchain local
-  escrita em Python, com contrato inteligente e interface web.
-  <br />
-  <em>Trabalho do 1º bimestre | Oficina de Desenvolvimento de Sistemas III | UEA</em>
+  Rastreabilidade de produtos da bioeconomia amazônica com contrato inteligente na Ethereum Sepolia.
+  <br>
+  <em>Entrega 2 | Oficina de Desenvolvimento de Sistemas III | UEA</em>
 </p>
-
----
-
-<h2 align="center">Tecnologias</h2>
 
 <div align="center">
-  <img alt="Python" src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img alt="Flask" src="https://img.shields.io/badge/Flask-3.1-000000?style=for-the-badge&logo=flask&logoColor=white" />
-  <img alt="Docker" src="https://img.shields.io/badge/Docker-Compose-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-  <img alt="JavaScript" src="https://img.shields.io/badge/JavaScript-ES_Modules-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" />
-  <img alt="Pytest" src="https://img.shields.io/badge/Pytest-251_testes-0A9EDC?style=for-the-badge&logo=pytest&logoColor=white" />
-  <img alt="Make" src="https://img.shields.io/badge/Make-menu_interativo-427819?style=for-the-badge&logo=gnu&logoColor=white" />
+  <img alt="Solidity" src="https://img.shields.io/badge/Solidity-0.8.34-363636?style=for-the-badge&logo=solidity&logoColor=white">
+  <img alt="Ethereum Sepolia" src="https://img.shields.io/badge/Ethereum-Sepolia-627EEA?style=for-the-badge&logo=ethereum&logoColor=white">
+  <img alt="Web3.js" src="https://img.shields.io/badge/Web3.js-4.0.3-F16822?style=for-the-badge&logo=web3dotjs&logoColor=white">
+  <img alt="MetaMask" src="https://img.shields.io/badge/MetaMask-carteira-F6851B?style=for-the-badge&logo=metamask&logoColor=white">
 </div>
 
----
+## Problema e solução
 
-<h2 align="center">Sobre o projeto</h2>
+Produtos como açaí, castanha-do-Brasil, cupuaçu e murumuru passam por várias organizações antes de chegar ao consumidor. Registros isolados dificultam verificar a integridade do histórico e identificar quem executou cada etapa.
 
-O **EcoOrigem** registra o ciclo de vida de lotes de açaí, castanha, murumuru,
-cupuaçu e óleos vegetais, da coleta ao consumidor. Cada etapa
-(cadastro, beneficiamento, transporte, recebimento e finalização) vira uma
-transação assinada, validada por um contrato inteligente e gravada em um bloco
-minerado com prova de trabalho.
+O EcoOrigem registra o ciclo do lote em um contrato inteligente público. A MetaMask identifica cada participante, o contrato aplica os perfis e a ordem obrigatória, e a Sepolia mantém transações e eventos consultáveis. Documentos ficam fora da Ethereum: somente o hash SHA-256 e uma referência `ipfs://` são registrados.
 
-Público: cooperativas, beneficiadores, transportadores, distribuidores,
-auditores e consumidores que precisam conferir a origem de um produto.
+```text
+Produtor → Beneficiador → Transportador → Distribuidor → Consumidor
+```
 
-Produtor &rarr; Beneficiador &rarr; Transportador &rarr; Distribuidor &rarr; Consumidor
+A blockchain prova que um registro confirmado não foi alterado. Ela não garante que a informação enviada na origem era verdadeira.
 
-A lógica segue as aulas do professor Fábio Santos: bloco com hash SHA-256,
-encadeamento por hash anterior, nonce e prova de trabalho, validação da cadeia e
-aplicação descentralizada com interface, contrato e blockchain. Sobre esse
-modelo foram acrescentados árvore de Merkle, transações com assinatura digital
-Ed25519 e um nó com contrato inteligente.
+## Estado da publicação
 
----
+Os artefatos locais estão prontos e validados. As ações abaixo exigem a MetaMask e as contas externas da equipe.
 
-<h2 align="center">Problema e justificativa</h2>
-
-| Item | Descrição |
-| --- | --- |
-| Problema | Cada participante da cadeia guarda o próprio registro. O consumidor não sabe qual versão é a verdadeira e quem administra o sistema pode reescrever o histórico |
-| Objetivo | Registrar cada etapa do lote de forma verificável, com regras que impedem atalhos e alterações |
-| Por que blockchain | Vários participantes precisam confiar no mesmo histórico e nenhum deles deve poder alterá-lo sozinho. Alterar um bloco quebra o encadeamento dali em diante |
-| O que a blockchain não garante | Que a informação esteja correta na origem. Ela garante que o registro não muda depois de gravado |
-
----
-
-<h2 align="center">Arquitetura</h2>
-
-<p align="center">
-  <img src="docs/assets/diagramas/arquitetura.png" alt="Arquitetura do EcoOrigem" width="760" />
-</p>
-
-| Componente | Tecnologia | Responsabilidade |
+| Item obrigatório | Estado em 07/11/2026 | Dado final |
 | --- | --- | --- |
-| Interface web | HTML, CSS e JavaScript em [assets/](assets/) | Registrar, consultar, explorar blocos e simular adulteração |
-| Gateway e carteiras | [ecoorigem/web/](ecoorigem/web/) | Guarda as chaves de demonstração e assina a transação da carteira ativa |
-| Nó da blockchain | [ecoorigem/node/](ecoorigem/node/) | Valida, executa o contrato, minera, persiste e registra rejeições |
-| Contrato inteligente | [ecoorigem/contract/](ecoorigem/contract/) | Perfis, máquina de estados, validações e eventos |
-| Blockchain | [ecoorigem/blockchain/](ecoorigem/blockchain/) | Blocos, prova de trabalho, árvore de Merkle, assinaturas e validação |
+| Contrato na Sepolia | Pendente de confirmação na MetaMask | Endereço: `PENDENTE` |
+| Transação e bloco do deploy | Pendente do deploy | Hash: `PENDENTE` · bloco: `PENDENTE` |
+| Código verificado no Etherscan | Pendente do deploy | URL: `PENDENTE` |
+| dApp na Vercel | Pendente de vincular o repositório | URL: `PENDENTE` |
+| Vídeo de 3 a 5 minutos | Pendente após a publicação | URL: `PENDENTE` |
 
-O detalhamento das decisões está no [relatório técnico](docs/relatorio/relatorio-tecnico-ecoorigem.pdf).
+Depois do deploy confirmado pela equipe, registre endereço, bloco e hash públicos no frontend:
 
----
+```bash
+make configure ADDRESS=0x... BLOCK=123456 TX=0x...
+```
 
-<h2 align="center">Contrato inteligente</h2>
+## Arquitetura
 
-<p align="center">
-  <img src="docs/assets/diagramas/maquina-de-estados.png" alt="Ciclo de vida do lote" width="820" />
-</p>
+```text
+Pessoa usuária
+    │
+    ▼
+Frontend estático na Vercel ── Web3.js 4.x ── MetaMask
+    │                                              │
+    │ consultas .call()                            │ assinatura e .send()
+    └──────────────────────┬───────────────────────┘
+                           ▼
+                 Ethereum Sepolia
+                           │
+                           ▼
+                 EcoOrigem.sol
+             perfis · estados · eventos
+                           │
+             hash SHA-256 + URI ipfs://
+                           │
+                           ▼
+                  conteúdo no IPFS
+```
 
-| Perfil | Operação | Regra |
-| --- | --- | --- |
-| Administrador | Conceder e revogar perfis | É a conta que implantou o contrato |
-| Produtor | `register_lot` | Produto da lista aceita, quantidade positiva, data não futura. Designa o beneficiador do lote |
-| Beneficiador | `record_processing` | Somente lote CADASTRADO e somente o beneficiador designado. Designa o transportador do lote |
-| Transportador | `start_transport` | Somente lote BENEFICIADO e somente o transportador designado, com distribuidor válido designado |
-| Distribuidor | `confirm_delivery` e `finalize_lot` | Só o distribuidor designado confirma e só o responsável atual finaliza |
-| Responsável atual | `attach_document` | Registra o hash de um documento, nunca o arquivo |
-| Qualquer pessoa | Consultas | Leitura pública, sem carteira |
-
-Cada etapa designa quem executa a próxima: o produtor escolhe o beneficiador, o
-beneficiador escolhe o transportador e o transportador escolhe o distribuidor.
-Outra carteira com o mesmo perfil recebe `ACCESS_DENIED`.
-
-Saltar ou repetir etapas retorna `INVALID_TRANSITION`, e qualquer operação sobre
-um lote FINALIZADO retorna `LOT_FINALIZED`. A referência completa está em
-[docs/relatorio/contrato-inteligente.md](docs/relatorio/contrato-inteligente.md).
-
----
-
-<h2 align="center">Dados na blockchain</h2>
-
-| Na blockchain | Fora da blockchain |
+| Camada | Responsabilidade |
 | --- | --- |
-| Identificador, produto, origem, quantidade e data de coleta | Arquivos de certificados, laudos e fotos |
-| Status atual e cada mudança de etapa, com data e bloco | Dados pessoais de produtores e trabalhadores |
-| Endereço da carteira responsável por cada operação | Chaves privadas (ficam no keystore local) |
-| Perfis concedidos e revogados | Log das operações rejeitadas (mantido pelo nó) |
-| Hash SHA-256 dos documentos anexados | Conteúdo dos documentos |
-| Assinatura digital de cada transação | Senhas ou credenciais |
+| [Backend Solidity](backend/) | Contrato canônico, configuração do compilador e testes locais e do Remix |
+| [Frontend](frontend/) | Conexão, autenticação por assinatura, consultas, transações, eventos e mensagens de erro |
+| MetaMask | Mantém as chaves fora da aplicação, assina o desafio e confirma transações |
+| Ethereum Sepolia | Executa o contrato, confirma transações e replica o estado público |
+| IPFS | Armazena opcionalmente documentos; o contrato guarda somente hash e URI |
+| Etherscan | Permite conferir contrato, transações, blocos e eventos |
 
----
+### Autenticação e perfis
 
-<h2 align="center">Estrutura do projeto</h2>
+Não existe senha armazenada no navegador ou na blockchain. Em uma dApp estática, usuário e senha no frontend poderiam ser contornados e não protegeriam o contrato. O fluxo usa o modelo nativo da Ethereum:
+
+1. a MetaMask conecta a conta;
+2. a carteira assina um desafio único, sem gas;
+3. o frontend recupera o endereço da assinatura e não persiste a assinatura;
+4. o contrato consulta os perfis concedidos ao endereço;
+5. cada escrita ainda precisa ser assinada e autorizada on-chain.
+
+## Contrato inteligente
+
+### Ciclo de vida
+
+| Estado | Carteira autorizada | Efeito |
+| --- | --- | --- |
+| `Registered` | Produtor | Cadastra o lote com taxa de `0.00001 ether` e designa o beneficiador |
+| `Processed` | Beneficiador designado | Registra o processamento e designa o transportador |
+| `InTransit` | Transportador designado | Registra destino e temperatura e designa o distribuidor |
+| `Distributed` | Distribuidor designado | Confirma o recebimento e assume a custódia |
+| `Finalized` | Distribuidor custodiante | Encerra o lote; novas alterações são recusadas |
+
+### Funções de negócio
+
+| Função | Quem chama | Efeito | Evento principal | Erros esperados |
+| --- | --- | --- | --- | --- |
+| `grantRole` | Proprietário | Concede perfil | `RoleUpdated` | `Unauthorized`, `InvalidData` |
+| `revokeRole` | Proprietário | Revoga perfil | `RoleUpdated` | `Unauthorized` |
+| `setPaused` | Proprietário | Pausa ou retoma escritas | `PauseChanged` | `Unauthorized`, `require` |
+| `registerLot` | Produtor | Cadastro pagável e designação do beneficiador | `LotRegistered` | `WrongFee`, `Unauthorized`, `InvalidData` |
+| `recordProcessing` | Beneficiador designado | Avança e designa transportador | `LotStatusChanged`, `DocumentAttached` | `InvalidStatus`, `DesignatedActorOnly` |
+| `startTransport` | Transportador designado | Registra transporte e designa distribuidor | `LotStatusChanged` | `InvalidStatus`, `Unauthorized` |
+| `confirmDelivery` | Distribuidor designado | Confirma entrega e custódia | `LotStatusChanged` | `DesignatedActorOnly` |
+| `finalizeLot` | Distribuidor custodiante | Encerra o ciclo | `LotStatusChanged` | `InvalidStatus` |
+| `attachDocument` | Custodiante atual | Registra SHA-256 e URI IPFS | `DocumentAttached` | `DuplicateDocument`, `InvalidData` |
+| `withdrawFees` | Proprietário | Envia taxas à tesouraria imutável | `FeesWithdrawn` | `TransferFailed`, `require` |
+
+Consultas públicas: `hasRole`, `totalLots`, `getLot`, `getLots`, `getDocuments`, `getHistory` e `statusLabel`.
+
+### Recursos obrigatórios de Solidity
+
+Os sete grupos exigidos no trabalho aparecem com comentários `// [Recurso: ...]` no contrato e seguem os exemplos do material de apoio do professor.
+
+| Grupo | Implementação no EcoOrigem | Justificativa |
+| --- | --- | --- |
+| Tipos de dados | `uint256`, `int256`, `bool`, `address payable`, `string`, `bytes32`, `constant`, `immutable` | Representam quantidade, temperatura, pausa, tesouraria, textos, hashes e valores imutáveis |
+| Funções | `constructor`, funções `external`, `public`, `internal`, `private`, `view`, `pure` e `payable` | Restringem a superfície de chamada e distinguem leitura, escrita e recebimento de ETH |
+| Estruturas de controle | `if/else`, `require` e `for` limitado a 50 itens | Validam entradas, controlam estados e evitam laços públicos sem limite |
+| Arrays e mappings | IDs e históricos dinâmicos, perfis e documentos em mappings | Mantêm índices e relações eficientes por lote e carteira |
+| Structs e enums | `Lot`, `Document`, `HistoryEntry`, `Role` e `Status` | Organizam as entidades e restringem os estados válidos |
+| Modificadores | `onlyOwner`, `onlyRole`, `lotExists`, `atStatus`, `whenRunning` | Reutilizam autorização, existência, estado e pausa |
+| Eventos e erros | Seis eventos e nove erros personalizados | Expõem histórico pesquisável e retornam causas específicas ao frontend |
+
+Mais detalhes estão em [backend/README.md](backend/README.md).
+
+## Frontend e integração Web3
+
+O frontend usa HTML, CSS e JavaScript puros, como nos exemplos de Mural do material de apoio. A Web3.js 4.0.3 é carregada por CDN com SRI.
+
+| Requisito | Implementação |
+| --- | --- |
+| Conectar carteira e saldo | `eth_requestAccounts`, endereço reduzido e `getBalance` |
+| Conferir ou trocar rede | `eth_chainId`, `wallet_switchEthereumChain` e inclusão da Sepolia |
+| Leitura | Totais, perfis, lotes, documentos e histórico com `.call()` |
+| Escrita com ETH | `registerLot(...).send({ value: REGISTRATION_FEE })` |
+| Estado da transação | Confirmação, pendência, bloco confirmado ou falha, com link para Etherscan |
+| Erros | Cancelamento, saldo insuficiente, `require` e erros personalizados em português |
+| Eventos | `getPastEvents("allEvents")` a partir do bloco de implantação |
+| Administração | Funções administrativas visíveis somente ao endereço `owner` |
+| Troca de conta ou rede | `accountsChanged` e `chainChanged` invalidam a sessão e recarregam os dados |
+
+## Estrutura em camadas
 
 ```text
 EcoOrigem/
-├── assets/                 # assets do sistema: css, js e imagens da interface
+├── backend/
+│   ├── config/
+│   │   └── solidity-compiler.json     # optimizer, runs e EVM usados no Remix
+│   ├── contracts/
+│   │   └── EcoOrigem.sol              # fonte canônica da Entrega 2
+│   ├── tests/
+│   │   ├── contract.test.mjs          # integração local com Ganache
+│   │   └── solidity/
+│   │       └── EcoOrigem_test.sol     # testes do plugin Solidity Unit Testing
+├── frontend/
+│   ├── assets/
+│   ├── tests/utils.test.mjs
+│   ├── index.html
+│   ├── style.css
+│   ├── app.js
+│   ├── utils.js
+│   └── contrato.js                    # ABI e dados do deploy
+├── scripts/                            # compilação, validação e segurança
 ├── docs/
-│   ├── relatorio/          # relatório técnico (docx e pdf) e referência do contrato
-│   ├── slides/             # apresentação (pptx e pdf), roteiro e vídeo de apoio
-│   ├── evidencias/         # cenários de teste e métricas medidas
-│   └── assets/             # diagramas, evidências, produtos, logos e recortes dos slides
-├── ecoorigem/
-│   ├── blockchain/         # bloco, cadeia, Merkle, carteira, transação
-│   ├── contract/           # contrato inteligente EcoOrigem
-│   ├── node/               # nó: mempool, mineração, persistência, API HTTP
-│   ├── web/                # gateway com carteiras e template da interface
-│   ├── client.py  bootstrap.py  keystore.py  config.py  __main__.py
-├── scripts/                # cenários, gravação da demo, diagramas, relatório, slides, menu
-├── tests/                  # 251 testes com pytest
-├── Dockerfile  docker-compose.yml  Makefile
-└── requirements*.txt  pyproject.toml
+│   ├── assets/
+│   ├── relatorio/
+│   └── slides/
+├── TESTES.md
+├── Makefile
+├── package.json
+└── vercel.json
 ```
 
----
+O contrato existe em um único local: `backend/contracts/EcoOrigem.sol`. Ao clonar o repositório pelo Git no Remix, abra esse arquivo e execute os testes em `backend/tests/solidity/`. O diretório `docs/` contém somente recursos visuais, relatório e apresentação. O roteiro de testes público permanece na raiz; os procedimentos operacionais pessoais de deploy e demonstração não são versionados.
 
-<h2 align="center">Como executar</h2>
+## Executar localmente
 
-### Requisitos
-
-- Docker Engine 24+ com Docker Compose, ou Python 3.10+ com `make`
-- Nenhuma credencial é necessária. As carteiras de demonstração são geradas localmente
-
-### Com Docker
+Requisitos: Node.js 20 ou superior, Python 3 para o servidor estático e um navegador com [MetaMask](https://metamask.com/pt-BR).
 
 ```bash
 git clone https://github.com/JulianaBallin/EcoOrigem.git
 cd EcoOrigem
-make docker-up      # nó, implantação do contrato e interface
-make docker-seed    # opcional: lotes de demonstração
+npm ci
+make check
+make serve
 ```
 
-Interface em <http://127.0.0.1:5000> e nó em <http://127.0.0.1:8545>.
-O serviço `deploy` implanta o contrato e concede os perfis antes de a interface subir.
-
-### Sem Docker
-
-```bash
-make venv           # cria .venv-ecoorigem e instala as dependências
-make node           # terminal 1: inicia a blockchain local
-make deploy         # terminal 2: implanta o contrato e concede os perfis
-make app            # terminal 3: inicia a interface
-```
-
-`make start` faz os três passos em segundo plano e `make stop` os encerra.
-
-### Menu interativo
-
-```bash
-make menu
-```
+Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carteira precisa de uma origem HTTP ou HTTPS.
 
 | Comando | Função |
 | --- | --- |
-| `make menu` | Menu interativo com todas as opções explicadas |
-| `make venv` | Cria o ambiente virtual e instala as dependências |
-| `make test`, `make coverage` | Testes, com ou sem cobertura |
-| `make lint`, `make format`, `make security` | Pylint, Black, Bandit e pip-audit |
-| `make scenarios` | Executa os cenários e gera a tabela de resultados |
-| `make docker-test` | Executa os testes dentro de um contêiner |
-| `make report`, `make slides` | Gera o relatório e a apresentação |
-| `make docker-reset`, `make reset` | Apagam a blockchain e as carteiras |
+| `make compile` | Compila com Solidity 0.8.34, optimizer de 200 runs e EVM Paris |
+| `make abi` | Compila e sincroniza a ABI em `frontend/contrato.js` |
+| `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
+| `make check` | Compila, sincroniza ABI, valida segurança e executa os testes |
+| `make security` | Procura credenciais e audita as dependências locais |
 
-Variáveis úteis estão em [.env.example](.env.example), como a dificuldade da prova de trabalho.
+## Testes e demonstração
 
----
+Os testes automatizados implantam um contrato novo em uma Ethereum local, sem saldo nem rede pública. Cobrem perfis, taxa, fluxo completo, estados inválidos, custódia, documentos, paginação, pausa, saque, conversões do frontend e tratamento de dados Web3.
 
-<h2 align="center">Testes e qualidade</h2>
+```bash
+make check
+make security
+```
 
-| Verificação | Ferramenta | Resultado |
-| --- | --- | --- |
-| Testes automatizados | pytest | 251 aprovados |
-| Cobertura | pytest-cov | 97% |
-| Análise estática | Pylint | 10 de 10 |
-| Formatação | Black | sem pendências |
-| Segurança do código | Bandit | sem achados no pacote |
-| Dependências | pip-audit | sem vulnerabilidades conhecidas |
-| Composição de software | Black Duck | não executado: ferramenta indisponível neste ambiente |
+Use [TESTES.md](TESTES.md) para reproduzir os cenários. O ensaio da demonstração deve seguir as notas da apresentação e o guia operacional mantido somente no ambiente local.
 
-Os **48 cenários** de [docs/evidencias/cenarios-de-teste.md](docs/evidencias/cenarios-de-teste.md)
-comparam resultado esperado e obtido para operações válidas, entradas inválidas,
-falta de permissão e adulteração de blocos. Reproduza com `make scenarios`.
+## Segurança e dados sensíveis
 
----
+- Nunca registre chave privada, frase de recuperação, senha, token ou credencial no Git, em URLs, em logs, no código ou no Docker Compose.
+- Arquivos `.env` são ignorados. Quando uma configuração privada for realmente necessária, ela deve existir apenas no `.env` local ou no gerenciador seguro da plataforma.
+- Arquivos `.env.example` contêm somente nomes e valores não sensíveis de exemplo.
+- O frontend publicado é estático. Qualquer variável entregue ao navegador é pública, mesmo se tiver sido lida de um `.env` durante o build. Portanto, tokens e chaves secretas não pertencem ao frontend nem às variáveis públicas da Vercel.
+- A MetaMask mantém a chave privada fora da aplicação. O EcoOrigem solicita conexão e assinatura, nunca a chave ou a frase de recuperação.
+- `make security` falha se detectar formatos comuns de credenciais nos arquivos publicáveis.
 
-<h2 align="center">Evidências</h2>
+## Documentação e entregáveis
 
-| Registro confirmado | Rejeição sem permissão |
+| Item | Conteúdo |
 | --- | --- |
-| ![Operação confirmada](docs/assets/evidencias/03-registrar-confirmado.png) | ![Operação rejeitada](docs/assets/evidencias/05-rejeicao-1.png) |
+| [Contrato](backend/README.md) | Regras, perfis, estados, eventos, erros e segurança |
+| [Roteiro de testes](TESTES.md) | Cenários válidos, inválidos, administrativos e responsivos |
+| [Apresentação PDF](docs/slides/apresentacao-ecoorigem.pdf) | Nove slides para a apresentação |
+| [Apresentação editável](docs/slides/apresentacao-ecoorigem.pptx) | PPTX com notas de fala |
+| [Relatório PDF](docs/relatorio/relatorio-desenvolvimento-ecoorigem.pdf) | Relatório técnico da Primeira Entrega preservado como evidência |
+| [Relatório editável](docs/relatorio/relatorio-desenvolvimento-ecoorigem.docx) | Fonte editável do relatório técnico preservado |
 
-| Explorador de blocos | Adulteração detectada |
+## Limitações e melhorias futuras
+
+- A rede confirma autoria da carteira e permanência do registro, não a veracidade do dado de origem.
+- Endereços, transações e dados on-chain são públicos. Não devem conter dados pessoais ou documentos sigilosos.
+- A disponibilidade de arquivos no IPFS depende de pinning; o hash continua verificável se o arquivo ficar indisponível.
+- A taxa de cadastro é fixa no bytecode.
+- Perfis revogados podem deixar um lote sem o ator designado. Uma substituição administrativa com evento e prazo é uma melhoria futura.
+- Um uso produtivo exigiria auditoria independente, política de privacidade, oráculos e plano de resposta a incidentes.
+
+## Equipe
+
+| Integrante | Papel principal na Entrega 2 |
 | --- | --- |
-| ![Blocos](docs/assets/evidencias/07-blockchain.png) | ![Adulteração](docs/assets/evidencias/10-adulteracao-detectada.png) |
+| Ana Beatriz Maciel Nunes | Experiência do frontend e apresentação |
+| Fernando Luiz da Silva Freire | Contrato Solidity e regras de negócio |
+| Juliana Ballin Lima | Integração Web3, testes, documentação e implantação |
 
-O [vídeo de apoio](docs/slides/video/demonstracao.webm) mostra a demonstração completa
-e serve de plano B em caso de falha técnica.
+Todos os integrantes devem dominar contrato, frontend e fluxo de implantação para a arguição.
 
----
+Professor: Prof. Dr. Fábio Santos.
 
-<h2 align="center">Documentação</h2>
+### Declaração de uso de IA
 
-| Documento | Conteúdo |
-| --- | --- |
-| [Relatório técnico](docs/relatorio/relatorio-tecnico-ecoorigem.pdf) ([docx](docs/relatorio/relatorio-tecnico-ecoorigem.docx)) | Problema, objetivos, justificativa, arquitetura, implementação, testes, limitações e conclusão |
-| [Apresentação](docs/slides/apresentacao-ecoorigem.pdf) ([pptx](docs/slides/apresentacao-ecoorigem.pptx)) | 11 slides da apresentação de 10 minutos |
-| [Créditos das fotos](docs/assets/produtos/CREDITOS.md) | Autoria e licença das fotos de produtos usadas nos slides |
-| [Cenários de teste](docs/evidencias/cenarios-de-teste.md) | Operações realizadas, resultados esperados e obtidos |
-| [Contrato inteligente](docs/relatorio/contrato-inteligente.md) | Métodos, argumentos, perfis e códigos de erro |
-| [Roteiro](docs/slides/roteiro-apresentacao.md) | Divisão do tempo, checklist da demonstração e plano de contingência |
+Ferramentas de IA foram usadas como apoio na revisão de arquitetura, implementação, testes e documentação. A equipe revisou o código, validou os fluxos e permanece responsável pelas decisões técnicas e pelo conteúdo entregue.
 
----
-
-<h2 align="center">Limitações</h2>
-
-- A blockchain roda em um único nó local. A validação detecta a adulteração, mas
-  não há rede de nós para recusar a versão alterada.
-- A prova de trabalho é didática, com dificuldade baixa.
-- As carteiras de demonstração ficam em um keystore no gateway, e não em uma
-  extensão como o MetaMask. Não use essas chaves fora de demonstrações.
-- A blockchain garante que o registro não muda, não que a informação seja
-  verdadeira na origem.
-- O estado é reconstruído reexecutando a cadeia e o armazenamento é um arquivo
-  JSON, adequados a um protótipo.
-
----
-
-<h2 align="center">Equipe</h2>
-
-<div align="center">
-
-| Integrante |
-| :-- |
-| **Ana Beatriz Maciel Nunes** |
-| **Fernando Luiz da Silva Freire** |
-| **Juliana Ballin Lima** |
-
-</div>
-
-Professor: Prof. Dr. Fábio Santos. Licença [MIT](LICENSE).
-
-<p align="center">
-  <a href="https://github.com/JulianaBallin/EcoOrigem">github.com/JulianaBallin/EcoOrigem</a>
-</p>
+Licença [MIT](LICENSE).
