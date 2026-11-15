@@ -182,7 +182,7 @@
             <div class="form-grid">
               <label><span>Produto</span><select name="product" data-list="produtos" required></select></label>
               <label><span>Município (AM)</span><select name="municipality" data-list="municipios" required></select></label>
-              <label class="wide"><span>Comunidade ou localidade <small>opcional</small></span><input name="community" maxlength="70" placeholder="Ex.: Comunidade São Francisco"></label>
+              <label class="wide"><span>Comunidade ou localidade <small>opcional</small></span><input name="community" list="comunidades-lista" maxlength="70" placeholder="Escolha na lista ou digite" autocomplete="off"><datalist id="comunidades-lista"></datalist></label>
               <label><span>Quantidade em kg</span><input name="quantity" type="number" min="0.001" max="100000" step="0.001" placeholder="Ex.: 250,5" required></label>
               <label><span>Data da coleta</span><input name="harvestDate" type="date" required></label>
               <label class="wide"><span>Beneficiador</span><select name="processor" data-holder-role="2" required></select></label>

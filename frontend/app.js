@@ -4,6 +4,7 @@ import {
   DEPLOYMENT_BLOCK,
 } from "./contrato.js";
 import { MUNICIPIOS_AM, PRODUTOS } from "./amazonas.js";
+import { COMUNIDADES_AM } from "./comunidades.js";
 import {
   FORM_ROLES,
   ROLE,
@@ -349,6 +350,14 @@ function fillSelect(select, items, placeholder) {
 function fillStaticLists() {
   fillSelect(document.querySelector('[data-list="produtos"]'), PRODUTOS, "Selecione o produto");
   fillSelect(document.querySelector('[data-list="municipios"]'), MUNICIPIOS_AM, "Selecione o município");
+  // As sugestões de comunidade mudam conforme o município escolhido.
+  document.querySelector('[data-list="municipios"]').addEventListener("change", (event) => {
+    const names = COMUNIDADES_AM[event.target.value] || [];
+    byId("comunidades-lista").innerHTML = names
+      .map((name) => `<option value="${escapeHtml(name)}"></option>`)
+      .join("");
+    document.querySelector('[name="community"]').value = "";
+  });
 }
 
 // Bloqueia abas e formulários que o perfil da carteira não pode usar.

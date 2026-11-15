@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { MUNICIPIOS_AM, PRODUTOS } from "../amazonas.js";
+import { COMUNIDADES_AM } from "../comunidades.js";
 import {
   dateToTimestamp,
   formatQuantity,
@@ -102,4 +103,12 @@ test("carteiras por perfil a partir dos eventos RoleUpdated", () => {
   ]);
   assert.deepEqual(holders[1], []);
   assert.deepEqual(holders[2], ["0xCd", "0xEf"]);
+});
+
+test("toda comunidade pertence a um dos 62 municípios e cabe no contrato", () => {
+  assert.deepEqual(Object.keys(COMUNIDADES_AM).sort(), [...MUNICIPIOS_AM].sort());
+  const nomes = Object.values(COMUNIDADES_AM).flat();
+  assert.ok(nomes.length > 3000);
+  // origem final = "comunidade, município - AM" precisa ter até 120 caracteres
+  assert.ok(nomes.every((n) => n.length <= 60));
 });
