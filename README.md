@@ -149,6 +149,11 @@ O frontend usa HTML, CSS e JavaScript puros, como nos exemplos de Mural do mater
 | Eventos | `getPastEvents("allEvents")` a partir do bloco de implantação |
 | Administração | Funções administrativas visíveis somente ao endereço `owner` |
 | Troca de conta ou rede | `accountsChanged` e `chainChanged` invalidam a sessão e recarregam os dados |
+| Modo consulta | Sem carteira, lotes, histórico e documentos são lidos por um nó público da Sepolia |
+| Controle por perfil | Abas e quadros que o perfil da carteira não pode usar ficam bloqueados com aviso |
+| Listas de seleção | Lotes, carteiras por perfil, produtos, municípios do Amazonas e destino com busca em todo o Brasil |
+| Dados do IBGE | Municípios e comunidades do Censo 2022, Localidades do Brasil (`frontend/dados/`) |
+| Integridade de arquivos | SHA-256 no navegador, registro com URI do IPFS e verificação em Lotes, Verificar um arquivo |
 
 ## Estrutura em camadas
 
@@ -205,6 +210,8 @@ Abra <http://127.0.0.1:8000>. Não abra `index.html` por `file://`, pois a carte
 | `make test` | Testa o contrato em uma Ethereum local isolada e testa os utilitários |
 | `make check` | Compila, sincroniza ABI, valida segurança e executa os testes |
 | `make security` | Procura credenciais e audita as dependências locais |
+| `make hash ARQUIVO=arq.pdf [LOTE=1]` | Confere o SHA-256 de um arquivo com os documentos registrados no contrato |
+| `make logs` | Acompanha os eventos do contrato na Sepolia em tempo real, com cores |
 
 ## Testes e demonstração
 
