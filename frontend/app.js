@@ -389,7 +389,8 @@ function lockForm(form, allowed, message) {
   if (!note) {
     note = document.createElement("p");
     note.className = "lock-note";
-    form.prepend(note);
+    // Entra antes do primeiro campo, abaixo do título e do número do passo.
+    form.insertBefore(note, form.querySelector("label"));
   }
   note.hidden = allowed;
   note.textContent = message;
@@ -599,7 +600,9 @@ function formatEventValue(value) {
 
 async function submitRegisterLot(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     const method = state.contract.methods.registerLot(
@@ -610,7 +613,7 @@ async function submitRegisterLot(event) {
       validateAddress(data.get("processor"), "beneficiador"),
     );
     await sendTransaction("Cadastro do lote", method, { value: state.feeWei });
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -618,7 +621,9 @@ async function submitRegisterLot(event) {
 
 async function submitProcessing(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     const file = data.get("document");
@@ -631,7 +636,7 @@ async function submitProcessing(event) {
       normalizeIpfsUri(data.get("ipfsUri")),
     );
     await sendTransaction("Beneficiamento do lote", method);
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -639,7 +644,9 @@ async function submitProcessing(event) {
 
 async function submitTransport(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     const temperature = Math.round(Number(data.get("temperature")) * 1000);
@@ -650,7 +657,7 @@ async function submitTransport(event) {
       String(temperature),
     );
     await sendTransaction("Início do transporte", method);
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -658,7 +665,9 @@ async function submitTransport(event) {
 
 async function submitDelivery(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     await sendTransaction(
@@ -668,7 +677,7 @@ async function submitDelivery(event) {
         data.get("note").trim(),
       ),
     );
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -676,7 +685,9 @@ async function submitDelivery(event) {
 
 async function submitFinalize(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     await sendTransaction(
@@ -686,7 +697,7 @@ async function submitFinalize(event) {
         data.get("note").trim(),
       ),
     );
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -694,7 +705,9 @@ async function submitFinalize(event) {
 
 async function submitDocument(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     const hash = await sha256File(data.get("document"));
@@ -707,7 +720,7 @@ async function submitDocument(event) {
         data.get("description").trim(),
       ),
     );
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
@@ -715,7 +728,9 @@ async function submitDocument(event) {
 
 async function submitRoleUpdate(event) {
   event.preventDefault();
-  const data = new FormData(event.currentTarget);
+  // Depois de um await o event.currentTarget vira null, por isso guardo o formulário.
+  const form = event.currentTarget;
+  const data = new FormData(form);
   try {
     await requireWriteAccess();
     const account = validateAddress(data.get("account"), "carteira");
@@ -725,7 +740,7 @@ async function submitRoleUpdate(event) {
       ? state.contract.methods.grantRole(account, role)
       : state.contract.methods.revokeRole(account, role);
     await sendTransaction(grant ? "Concessão de perfil" : "Revogação de perfil", method);
-    event.currentTarget.reset();
+    form.reset();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   }
