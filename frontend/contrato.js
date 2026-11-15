@@ -1,8 +1,8 @@
 // Gerado a partir de backend/contracts/EcoOrigem.sol por `npm run sync:abi`.
 // Preencha os dados de implantação depois do deploy na Sepolia.
-export const CONTRACT_ADDRESS = "";
-export const DEPLOYMENT_BLOCK = 0;
-export const DEPLOYMENT_TX = "";
+export const CONTRACT_ADDRESS = "0xe94f84131693D750ab098ABDe1E2b36369c9ea24";
+export const DEPLOYMENT_BLOCK = 12141645;
+export const DEPLOYMENT_TX = "0x18422fd8dc90dcbbf64997a56a3d97892e5724fe961802939ab1d17c29bed542";
 
 export const CONTRACT_ABI = [
   {
