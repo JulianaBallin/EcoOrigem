@@ -673,14 +673,21 @@ function sendWithWallet(method, options) {
 }
 
 async function waitForReceipt(hash) {
-  // Consulta o recibo a cada 2 s, por até 5 minutos.
+  // Consulta o recibo a cada 2 s, por até 5 minutos. Pela carteira, o recibo
+  // ainda inexistente volta vazio; o Web3.js 4.0.3 lança erro nesse caso.
   for (let attempt = 0; attempt < 150; attempt += 1) {
-    const receipt = await state.web3.eth.getTransactionReceipt(hash);
+    const receipt = await window.ethereum.request({
+      method: "eth_getTransactionReceipt",
+      params: [hash],
+    });
     if (receipt) {
       if (Number(receipt.status) !== 1) {
         throw new Error("A operação foi recusada pelo contrato e nada foi alterado.");
       }
-      return receipt;
+      return {
+        transactionHash: receipt.transactionHash,
+        blockNumber: Number(receipt.blockNumber),
+      };
     }
     await new Promise((resolve) => setTimeout(resolve, 2000));
   }
