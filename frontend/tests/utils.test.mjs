@@ -8,6 +8,7 @@ import {
   dateToTimestamp,
   formatQuantity,
   filterOptions,
+  findDocumentByHash,
   friendlyFallbackError,
   normalizeText,
   hasAnyRole,
@@ -139,4 +140,14 @@ test("municípios do Brasil e arquivos de comunidades por UF", () => {
     // destino final "comunidade, município - UF" precisa caber em 120 caracteres
     assert.ok(origem.every((n) => n.length <= 60), uf);
   }
+});
+
+test("compara o hash do arquivo com os documentos registrados no lote", () => {
+  const hashA = `0x${"a".repeat(64)}`;
+  const hashB = `0x${"b".repeat(64)}`;
+  const docs = [{ contentHash: hashA, ipfsUri: "ipfs://x", description: "Laudo", author: "0x1", timestamp: "1" }];
+  assert.equal(findDocumentByHash(docs, hashA.toUpperCase().replace("0X", "0x"))?.description, "Laudo");
+  assert.equal(findDocumentByHash(docs, hashB), null);
+  assert.equal(findDocumentByHash([], hashA), null);
+  assert.equal(findDocumentByHash([[hashB, "u", "Nota", "0x2", "2"]], hashB)?.description, "Nota");
 });

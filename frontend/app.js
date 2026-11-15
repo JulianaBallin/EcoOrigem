@@ -17,6 +17,7 @@ import {
   formatQuantity,
   formatTimestamp,
   filterOptions,
+  findDocumentByHash,
   friendlyFallbackError,
   hasAnyRole,
   lockMessage,
@@ -208,6 +209,7 @@ function bindActions() {
   byId("delivery-form").addEventListener("submit", submitDelivery);
   byId("finalize-form").addEventListener("submit", submitFinalize);
   byId("document-form").addEventListener("submit", submitDocument);
+  byId("verify-form").addEventListener("submit", submitVerify);
   byId("role-form").addEventListener("submit", submitRoleUpdate);
   byId("pause-button").addEventListener("click", togglePause);
   byId("withdraw-button").addEventListener("click", withdrawFees);
@@ -593,7 +595,55 @@ async function loadLots() {
   renderLots();
 }
 
+// Lista todos os lotes no formulário de verificação, mantendo a escolha atual.
+function renderVerifyLots() {
+  const select = byId("verify-lot");
+  const previous = select.value;
+  select.innerHTML = state.lots.length
+    ? '<option value="">Selecione o lote</option>' +
+      state.lots
+        .map((lot) => `<option value="${lot.id}">#${lot.id} · ${escapeHtml(lot.product)} · ${escapeHtml(lot.origin)}</option>`)
+        .join("")
+    : '<option value="">Nenhum lote registrado</option>';
+  if (state.lots.some((lot) => lot.id === previous)) select.value = previous;
+}
+
+// Calcula o SHA-256 do arquivo e compara com os documentos gravados no lote.
+async function submitVerify(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const out = byId("verify-result");
+  const show = (state_, html) => {
+    out.dataset.state = state_;
+    out.innerHTML = html;
+    out.hidden = false;
+  };
+  try {
+    const lotId = data.get("lotId");
+    const hash = await sha256File(data.get("document"));
+    const documents = await reader().contract.methods.getDocuments(lotId).call();
+    const found = findDocumentByHash(documents, hash);
+    if (found) {
+      show(
+        "ok",
+        `<strong>Íntegro.</strong> O arquivo confere com o documento “${escapeHtml(found.description)}” registrado no lote #${escapeHtml(lotId)} por ${shortAddress(found.author)} em ${formatTimestamp(found.timestamp)}.<br><span class="mono">${escapeHtml(hash)}</span>`,
+      );
+    } else if (!documents.length) {
+      show("fail", `O lote #${escapeHtml(lotId)} ainda não tem documentos registrados para comparar.`);
+    } else {
+      show(
+        "fail",
+        `<strong>Não confere.</strong> Este arquivo não corresponde a nenhum documento do lote #${escapeHtml(lotId)}: ele foi alterado ou é outro arquivo.<br><span class="mono">${escapeHtml(hash)}</span>`,
+      );
+    }
+  } catch (error) {
+    show("fail", escapeHtml(decodeContractError(error)));
+  }
+}
+
 function renderLots() {
+  renderVerifyLots();
   const query = byId("lot-search").value.trim().toLowerCase();
   const lots = state.lots.filter((lot) =>
     [lot.id, lot.product, lot.origin, lot.producer, lot.custodian]

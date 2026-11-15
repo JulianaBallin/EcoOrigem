@@ -249,3 +249,21 @@ export function filterOptions(options, query, limit = 50) {
   }
   return [...starts, ...contains].slice(0, limit);
 }
+
+// Procura, entre os documentos do lote, o que tem o mesmo hash do arquivo.
+export function findDocumentByHash(documents, hash) {
+  const wanted = String(hash).toLowerCase();
+  for (const doc of documents) {
+    const contentHash = String(doc.contentHash ?? doc[0]).toLowerCase();
+    if (contentHash === wanted) {
+      return {
+        contentHash,
+        ipfsUri: doc.ipfsUri ?? doc[1],
+        description: doc.description ?? doc[2],
+        author: doc.author ?? doc[3],
+        timestamp: doc.timestamp ?? doc[4],
+      };
+    }
+  }
+  return null;
+}
