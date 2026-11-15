@@ -180,11 +180,12 @@
           <div class="section-heading"><div><span class="eyebrow">PRODUTOR</span><h2 id="register-title">Cadastrar novo lote</h2><p>O cadastro envia a taxa definida pelo contrato e designa o beneficiador responsável.</p></div></div>
           <form id="register-form" class="content-card form-card">
             <div class="form-grid">
-              <label><span>Produto</span><select name="product" required><option value="">Selecione</option><option>Açaí</option><option>Castanha-do-Brasil</option><option>Cupuaçu</option><option>Murumuru</option><option>Andiroba</option><option>Copaíba</option><option>Guaraná</option><option>Óleo vegetal</option></select></label>
-              <label><span>Origem</span><input name="origin" minlength="3" maxlength="120" placeholder="Comunidade, município e estado" required></label>
+              <label><span>Produto</span><select name="product" data-list="produtos" required></select></label>
+              <label><span>Município (AM)</span><select name="municipality" data-list="municipios" required></select></label>
+              <label class="wide"><span>Comunidade ou localidade <small>opcional</small></span><input name="community" maxlength="70" placeholder="Ex.: Comunidade São Francisco"></label>
               <label><span>Quantidade em kg</span><input name="quantity" type="number" min="0.001" max="100000" step="0.001" placeholder="Ex.: 250,5" required></label>
               <label><span>Data da coleta</span><input name="harvestDate" type="date" required></label>
-              <label class="wide"><span>Carteira do beneficiador</span><input name="processor" class="mono" placeholder="0x..." required></label>
+              <label class="wide"><span>Beneficiador</span><select name="processor" data-holder-role="2" required></select></label>
             </div>
             <div class="form-note"><strong>Taxa on-chain:</strong> <span id="form-fee">carregando</span>. Depois do cadastro, use a seção Documentos para registrar o SHA-256 e a referência IPFS.</div>
             <button class="button primary" type="submit">Revisar e cadastrar lote</button>
@@ -196,30 +197,30 @@
           <div class="operation-grid">
             <form id="processing-form" class="content-card compact-form">
               <span class="step-number">01</span><h3>Registrar beneficiamento</h3><p>Perfil Beneficiador designado.</p>
-              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Lote</span><select name="lotId" data-lot-step="processing" required></select></label>
               <label><span>Descrição</span><textarea name="description" minlength="3" maxlength="160" required></textarea></label>
-              <label><span>Carteira do transportador</span><input name="carrier" class="mono" placeholder="0x..." required></label>
+              <label><span>Transportador</span><select name="carrier" data-holder-role="3" required></select></label>
               <label><span>Laudo <small>opcional</small></span><input name="document" type="file"></label>
               <label><span>CID no IPFS <small>opcional</small></span><input name="ipfsUri" placeholder="ipfs://..."></label>
               <button class="button primary full" type="submit">Registrar beneficiamento</button>
             </form>
             <form id="transport-form" class="content-card compact-form">
               <span class="step-number">02</span><h3>Iniciar transporte</h3><p>Perfil Transportador designado.</p>
-              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
-              <label><span>Carteira do distribuidor</span><input name="distributor" class="mono" placeholder="0x..." required></label>
+              <label><span>Lote</span><select name="lotId" data-lot-step="transport" required></select></label>
+              <label><span>Distribuidor</span><select name="distributor" data-holder-role="4" required></select></label>
               <label><span>Destino</span><input name="destination" minlength="3" maxlength="120" required></label>
               <label><span>Temperatura em °C</span><input name="temperature" type="number" min="-30" max="60" step="0.001" value="24" required></label>
               <button class="button primary full" type="submit">Iniciar transporte</button>
             </form>
             <form id="delivery-form" class="content-card compact-form">
               <span class="step-number">03</span><h3>Confirmar recebimento</h3><p>Perfil Distribuidor designado.</p>
-              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Lote</span><select name="lotId" data-lot-step="delivery" required></select></label>
               <label><span>Observação <small>opcional</small></span><textarea name="note" maxlength="160"></textarea></label>
               <button class="button primary full" type="submit">Confirmar recebimento</button>
             </form>
             <form id="finalize-form" class="content-card compact-form">
               <span class="step-number">04</span><h3>Finalizar lote</h3><p>Encerra definitivamente o histórico.</p>
-              <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+              <label><span>Lote</span><select name="lotId" data-lot-step="finalize" required></select></label>
               <label><span>Observação <small>opcional</small></span><textarea name="note" maxlength="160"></textarea></label>
               <button class="button primary full" type="submit">Finalizar lote</button>
             </form>
@@ -231,7 +232,7 @@
           <div class="overview-grid">
             <form id="document-form" class="content-card form-card">
               <div class="form-grid one-column">
-                <label><span>ID do lote</span><input name="lotId" type="number" min="1" required></label>
+                <label><span>Lote</span><select name="lotId" data-lot-step="document" required></select></label>
                 <label><span>Descrição</span><input name="description" minlength="3" maxlength="120" required></label>
                 <label><span>Arquivo</span><input name="document" type="file" required></label>
                 <label><span>CID no IPFS <small>opcional</small></span><input name="ipfsUri" placeholder="ipfs://... ou CID"></label>

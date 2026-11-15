@@ -1,9 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { MUNICIPIOS_AM, PRODUTOS } from "../amazonas.js";
 import {
   dateToTimestamp,
   formatQuantity,
   friendlyFallbackError,
+  hasAnyRole,
+  lockMessage,
+  lotsForStep,
+  roleHoldersFromEvents,
   normalizeIpfsUri,
   normalizeLot,
   shortAddress,
@@ -60,4 +65,41 @@ test("traduz erros da carteira e do contrato em mensagens com orientação", () 
   assert.match(friendlyFallbackError(new Error("Contrato pausado")), /pausado/);
   assert.match(friendlyFallbackError(new Error("Invalid params input - Expected never")), /Ctrl\+Shift\+R/);
   assert.match(friendlyFallbackError(new Error("Transaction not found")), /Atividade/);
+});
+
+test("listas do Amazonas: 62 municípios e produtos sem repetição", () => {
+  assert.equal(MUNICIPIOS_AM.length, 62);
+  assert.equal(new Set(MUNICIPIOS_AM).size, 62);
+  assert.equal(new Set(PRODUTOS).size, PRODUTOS.length);
+  assert.ok(PRODUTOS.every((nome) => nome.length >= 2 && nome.length <= 60));
+});
+
+test("bloqueio por perfil e mensagem de orientação", () => {
+  assert.equal(hasAnyRole([2], [1]), false);
+  assert.equal(hasAnyRole([2, 3], [3, 4]), true);
+  assert.match(lockMessage([1], [2], true), /Produtor.*Beneficiador/);
+  assert.match(lockMessage([1], [], false), /Conecte a MetaMask/);
+});
+
+test("cada etapa lista só os lotes da carteira naquela etapa", () => {
+  const eu = "0xAAA";
+  const lots = [
+    { id: "1", status: 0, processor: "0xaaa", carrier: "", distributor: "", custodian: "0xP" },
+    { id: "2", status: 0, processor: "0xBBB", carrier: "", distributor: "", custodian: "0xP" },
+    { id: "3", status: 1, processor: "0xBBB", carrier: eu, distributor: "", custodian: eu },
+    { id: "4", status: 3, processor: "", carrier: "", distributor: eu, custodian: eu },
+  ];
+  assert.deepEqual(lotsForStep(lots, "processing", eu).map((l) => l.id), ["1"]);
+  assert.deepEqual(lotsForStep(lots, "transport", eu).map((l) => l.id), ["3"]);
+  assert.deepEqual(lotsForStep(lots, "finalize", eu).map((l) => l.id), ["4"]);
+  assert.deepEqual(lotsForStep(lots, "document", eu).map((l) => l.id), ["3", "4"]);
+});
+
+test("carteiras por perfil a partir dos eventos RoleUpdated", () => {
+  const ev = (account, role, enabled) => ({ returnValues: { account, role, enabled } });
+  const holders = roleHoldersFromEvents([
+    ev("0xAb", 1n, true), ev("0xCd", "2", true), ev("0xAb", 1n, false), ev("0xEf", 2, true),
+  ]);
+  assert.deepEqual(holders[1], []);
+  assert.deepEqual(holders[2], ["0xCd", "0xEf"]);
 });

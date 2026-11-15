@@ -3,16 +3,23 @@ import {
   CONTRACT_ADDRESS,
   DEPLOYMENT_BLOCK,
 } from "./contrato.js";
+import { MUNICIPIOS_AM, PRODUTOS } from "./amazonas.js";
 import {
+  FORM_ROLES,
   ROLE,
   ROLE_LABELS,
+  TAB_ROLES,
   STATUS_LABELS,
   dateToTimestamp,
   escapeHtml,
   formatQuantity,
   formatTimestamp,
   friendlyFallbackError,
+  hasAnyRole,
+  lockMessage,
+  lotsForStep,
   revertReasonMessage,
+  roleHoldersFromEvents,
   ipfsGatewayUrl,
   normalizeIpfsUri,
   normalizeLot,
@@ -36,6 +43,8 @@ const state = {
   paused: false,
   feeWei: "0",
   lots: [],
+  roles: [],
+  holders: { 1: [], 2: [], 3: [], 4: [] },
 };
 
 const byId = (id) => document.getElementById(id);
@@ -47,6 +56,8 @@ async function initialize() {
   bindNavigation();
   bindActions();
   setMaximumHarvestDate();
+  fillStaticLists();
+  renderAccess();
 
   if (!window.ethereum || !window.Web3) {
     showBanner(
@@ -123,6 +134,11 @@ function bindNavigation() {
 }
 
 function openPanel(id) {
+  const target = document.querySelector(`[data-tab="${id}"]`);
+  if (target?.classList.contains("locked")) {
+    showToast(target.title, "error");
+    return;
+  }
   all(".tab").forEach((button) => {
     button.classList.toggle("active", button.dataset.tab === id);
   });
@@ -274,8 +290,9 @@ async function refreshContractData() {
     byId("contract-balance").textContent = formatEth(contractBalance);
     byId("form-fee").textContent = `${formatEth(fee)} SepoliaETH`;
 
-    await Promise.all([loadRoles(), loadLots()]);
+    await Promise.all([loadRoles(), loadLots(), loadHolders()]);
     renderAdminState();
+    renderAccess();
   } catch (error) {
     showToast(decodeContractError(error), "error");
   } finally {
@@ -284,7 +301,10 @@ async function refreshContractData() {
 }
 
 async function loadRoles() {
-  if (!state.account) return;
+  if (!state.account) {
+    state.roles = [];
+    return;
+  }
   const values = await Promise.all(
     [ROLE.PRODUCER, ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR].map((role) =>
       state.contract.methods.hasRole(state.account, role).call(),
@@ -293,8 +313,125 @@ async function loadRoles() {
   const roles = values
     .map((enabled, index) => (enabled ? ROLE_LABELS[index + 1] : null))
     .filter(Boolean);
+  state.roles = values
+    .map((enabled, index) => (enabled ? index + 1 : null))
+    .filter(Boolean);
   if (sameAddress(state.account, state.owner)) roles.unshift("Administrador");
   byId("roles-value").textContent = roles.join(" · ") || "Sem perfil operacional";
+}
+
+// Quem tem cada perfil, lido dos eventos RoleUpdated (alimenta as listas).
+async function loadHolders() {
+  try {
+    const latest = Number(await state.web3.eth.getBlockNumber());
+    const fromBlock = Math.max(Number(DEPLOYMENT_BLOCK || 0), latest - 49_999, 0);
+    const events = await state.contract.getPastEvents("RoleUpdated", {
+      fromBlock,
+      toBlock: "latest",
+    });
+    state.holders = roleHoldersFromEvents(events);
+  } catch (error) {
+    console.error("Não foi possível listar as carteiras por perfil:", error);
+  }
+}
+
+function buildOrigin(municipality, community) {
+  const place = String(community || "").trim();
+  return place ? `${place}, ${municipality} - AM` : `${municipality} - AM`;
+}
+
+function fillSelect(select, items, placeholder) {
+  select.innerHTML =
+    `<option value="">${placeholder}</option>` +
+    items.map((item) => `<option>${escapeHtml(item)}</option>`).join("");
+}
+
+function fillStaticLists() {
+  fillSelect(document.querySelector('[data-list="produtos"]'), PRODUTOS, "Selecione o produto");
+  fillSelect(document.querySelector('[data-list="municipios"]'), MUNICIPIOS_AM, "Selecione o município");
+}
+
+// Bloqueia abas e formulários que o perfil da carteira não pode usar.
+function renderAccess() {
+  const connected =
+    Boolean(state.account) && state.chainId === SEPOLIA_CHAIN_ID && Boolean(state.contract);
+  Object.entries(TAB_ROLES).forEach(([tab, needed]) => {
+    const button = document.querySelector(`[data-tab="${tab}"]`);
+    const allowed = connected && hasAnyRole(state.roles, needed);
+    button.classList.toggle("locked", !allowed);
+    button.setAttribute("aria-disabled", String(!allowed));
+    button.title = allowed ? "" : lockMessage(needed, state.roles, connected);
+    if (!allowed && !byId(tab).hidden) openPanel("visao-geral");
+  });
+  Object.entries(FORM_ROLES).forEach(([id, needed]) => {
+    const allowed = connected && hasAnyRole(state.roles, needed);
+    lockForm(byId(id), allowed, lockMessage(needed, state.roles, connected));
+  });
+  renderLotSelects();
+  renderHolderSelects();
+}
+
+function lockForm(form, allowed, message) {
+  form.classList.toggle("locked", !allowed);
+  form.querySelectorAll("input, select, textarea, button").forEach((field) => {
+    field.disabled = !allowed;
+  });
+  let note = form.querySelector(".lock-note");
+  if (!note) {
+    note = document.createElement("p");
+    note.className = "lock-note";
+    form.prepend(note);
+  }
+  note.hidden = allowed;
+  note.textContent = message;
+}
+
+// O botão de enviar só fica ativo se o formulário liberou e nenhuma lista está vazia.
+function syncSubmit(form) {
+  const submit = form.querySelector('[type="submit"]');
+  if (!submit) return;
+  const empty = [...form.querySelectorAll("select")].some((s) => s.dataset.empty === "1");
+  submit.disabled = form.classList.contains("locked") || empty;
+}
+
+function renderLotSelects() {
+  all("[data-lot-step]").forEach((select) => {
+    const form = select.closest("form");
+    const lots = lotsForStep(state.lots, select.dataset.lotStep, state.account);
+    const previous = select.value;
+    select.innerHTML = lots.length
+      ? '<option value="">Selecione o lote</option>' +
+        lots
+          .map(
+            (lot) =>
+              `<option value="${lot.id}">#${lot.id} · ${escapeHtml(lot.product)} · ${escapeHtml(lot.origin)}</option>`,
+          )
+          .join("")
+      : '<option value="">Nenhum lote disponível para sua carteira nesta etapa</option>';
+    if (lots.some((lot) => lot.id === previous)) select.value = previous;
+    select.dataset.empty = lots.length ? "0" : "1";
+    select.disabled = form.classList.contains("locked") || !lots.length;
+    syncSubmit(form);
+  });
+}
+
+function renderHolderSelects() {
+  all("[data-holder-role]").forEach((select) => {
+    const form = select.closest("form");
+    const role = Number(select.dataset.holderRole);
+    const wallets = state.holders[role] || [];
+    const previous = select.value;
+    select.innerHTML = wallets.length
+      ? `<option value="">Selecione o ${ROLE_LABELS[role].toLowerCase()}</option>` +
+        wallets
+          .map((wallet) => `<option value="${wallet}">${ROLE_LABELS[role]} · ${shortAddress(wallet)}</option>`)
+          .join("")
+      : `<option value="">Nenhuma carteira com perfil ${ROLE_LABELS[role]}</option>`;
+    if (wallets.includes(previous)) select.value = previous;
+    select.dataset.empty = wallets.length ? "0" : "1";
+    select.disabled = form.classList.contains("locked") || !wallets.length;
+    syncSubmit(form);
+  });
 }
 
 async function loadLots() {
@@ -458,7 +595,7 @@ async function submitRegisterLot(event) {
     await requireWriteAccess();
     const method = state.contract.methods.registerLot(
       data.get("product"),
-      data.get("origin").trim(),
+      buildOrigin(data.get("municipality"), data.get("community")),
       toQuantityGrams(data.get("quantity")),
       dateToTimestamp(data.get("harvestDate")),
       validateAddress(data.get("processor"), "beneficiador"),
@@ -653,7 +790,7 @@ async function sendTransaction(title, method, options = {}) {
       hash,
     );
     showToast("Transação confirmada na Sepolia.");
-    await refreshContractData();
+    refreshContractData().catch((error) => console.warn("Falha ao atualizar os dados:", error));
     return receipt;
   } catch (error) {
     const raw = decodeContractError(error);
@@ -674,13 +811,18 @@ function sendWithWallet(method, options) {
 }
 
 async function waitForReceipt(hash) {
-  // Consulta o recibo a cada 2 s, por até 5 minutos. Pela carteira, o recibo
-  // ainda inexistente volta vazio; o Web3.js 4.0.3 lança erro nesse caso.
+  // Consulta o recibo a cada 2 s, por até 5 minutos. Falha momentânea da consulta
+  // ("Not found", rede) não derruba a tela: a transação já foi enviada à rede.
   for (let attempt = 0; attempt < 150; attempt += 1) {
-    const receipt = await window.ethereum.request({
-      method: "eth_getTransactionReceipt",
-      params: [hash],
-    });
+    let receipt = null;
+    try {
+      receipt = await window.ethereum.request({
+        method: "eth_getTransactionReceipt",
+        params: [hash],
+      });
+    } catch (error) {
+      console.warn("Recibo ainda indisponível, tentando de novo:", error);
+    }
     if (receipt) {
       if (Number(receipt.status) !== 1) {
         throw new Error("A operação foi recusada pelo contrato e nada foi alterado.");
@@ -838,8 +980,10 @@ function clearContractState() {
   byId("registration-fee").textContent = "-";
   byId("contract-balance").textContent = "-";
   state.lots = [];
+  state.roles = [];
   renderLots();
   renderAdminState();
+  renderAccess();
 }
 
 function setBusyRefresh(busy) {

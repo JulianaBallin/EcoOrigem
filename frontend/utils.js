@@ -167,3 +167,61 @@ export function friendlyFallbackError(error) {
   }
   return "A operação não foi concluída. Confira os dados e tente de novo. Os detalhes técnicos estão no console do navegador (F12).";
 }
+
+// Quais perfis liberam cada seção e cada formulário (o contrato continua sendo
+// quem decide de verdade; isto só evita o erro antes de gastar gas).
+export const TAB_ROLES = Object.freeze({
+  registrar: [ROLE.PRODUCER],
+  operacoes: [ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR],
+  documentos: [ROLE.PRODUCER, ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR],
+});
+
+export const FORM_ROLES = Object.freeze({
+  "processing-form": [ROLE.PROCESSOR],
+  "transport-form": [ROLE.CARRIER],
+  "delivery-form": [ROLE.DISTRIBUTOR],
+  "finalize-form": [ROLE.DISTRIBUTOR],
+});
+
+export function hasAnyRole(userRoles, needed) {
+  return needed.some((role) => userRoles.includes(role));
+}
+
+export function lockMessage(needed, userRoles, connected) {
+  if (!connected) return "Conecte a MetaMask para liberar esta área.";
+  const required = needed.map((role) => ROLE_LABELS[role]).join(" ou ");
+  const mine = userRoles.length
+    ? userRoles.map((role) => ROLE_LABELS[role]).join(", ")
+    : "sem perfil operacional";
+  return `Área do perfil ${required}. Sua carteira está como: ${mine}. Troque de conta na MetaMask.`;
+}
+
+const sameWallet = (a, b) => Boolean(a && b && String(a).toLowerCase() === String(b).toLowerCase());
+
+// Lotes que a carteira pode mexer em cada etapa (alimenta as listas de seleção).
+export function lotsForStep(lots, step, account) {
+  const rules = {
+    processing: (lot) => lot.status === 0 && sameWallet(lot.processor, account),
+    transport: (lot) => lot.status === 1 && sameWallet(lot.carrier, account),
+    delivery: (lot) => lot.status === 2 && sameWallet(lot.distributor, account),
+    finalize: (lot) => lot.status === 3 && sameWallet(lot.distributor, account),
+    document: (lot) => lot.status < 4 && sameWallet(lot.custodian, account),
+  };
+  return lots.filter(rules[step] || (() => false));
+}
+
+// Monta quem tem cada perfil a partir dos eventos RoleUpdated, em ordem.
+export function roleHoldersFromEvents(events) {
+  const holders = { 1: new Map(), 2: new Map(), 3: new Map(), 4: new Map() };
+  for (const event of events) {
+    const { account, role, enabled } = event.returnValues || {};
+    const key = Number(role);
+    if (!holders[key]) continue;
+    const address = String(account);
+    if (enabled === true || enabled === "true") holders[key].set(address.toLowerCase(), address);
+    else holders[key].delete(address.toLowerCase());
+  }
+  return Object.fromEntries(
+    Object.entries(holders).map(([role, map]) => [role, [...map.values()]]),
+  );
+}
