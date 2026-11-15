@@ -52,6 +52,7 @@ const state = {
   feeWei: "0",
   lots: [],
   roles: [],
+  docCounts: {},
   holders: { 1: [], 2: [], 3: [], 4: [] },
 };
 
@@ -592,6 +593,7 @@ async function loadLots() {
   state.lots = (await reader().contract.methods.getLots(0, PAGE_LIMIT).call()).map(
     normalizeLot,
   );
+  state.docCounts = await loadDocumentCounts(state.lots);
   renderLots();
 }
 
@@ -599,13 +601,36 @@ async function loadLots() {
 function renderVerifyLots() {
   const select = byId("verify-lot");
   const previous = select.value;
-  select.innerHTML = state.lots.length
+  // Só entram os lotes que têm pelo menos um documento registrado.
+  const withDocs = state.lots.filter((lot) => state.docCounts[lot.id]);
+  select.innerHTML = withDocs.length
     ? '<option value="">Selecione o lote</option>' +
-      state.lots
-        .map((lot) => `<option value="${lot.id}">#${lot.id} · ${escapeHtml(lot.product)} · ${escapeHtml(lot.origin)}</option>`)
+      withDocs
+        .map((lot) => {
+          const n = state.docCounts[lot.id];
+          return `<option value="${lot.id}">#${lot.id} · ${escapeHtml(lot.product)} · ${n} documento${n === 1 ? "" : "s"}</option>`;
+        })
         .join("")
-    : '<option value="">Nenhum lote registrado</option>';
-  if (state.lots.some((lot) => lot.id === previous)) select.value = previous;
+    : '<option value="">Nenhum lote com documento registrado</option>';
+  select.disabled = !withDocs.length;
+  const submit = byId("verify-form").querySelector('[type="submit"]');
+  if (submit) submit.disabled = !withDocs.length;
+  if (withDocs.some((lot) => lot.id === previous)) select.value = previous;
+}
+
+// Conta os documentos de cada lote (alimenta a lista do verificador).
+async function loadDocumentCounts(lots) {
+  const { contract } = reader();
+  const counts = await Promise.all(
+    lots.map(async (lot) => {
+      try {
+        return (await contract.methods.getDocuments(lot.id).call()).length;
+      } catch (error) {
+        return 0;
+      }
+    }),
+  );
+  return Object.fromEntries(lots.map((lot, i) => [lot.id, counts[i]]));
 }
 
 // Calcula o SHA-256 do arquivo e compara com os documentos gravados no lote.
@@ -1202,6 +1227,7 @@ function clearContractState() {
   byId("registration-fee").textContent = "-";
   byId("contract-balance").textContent = "-";
   state.lots = [];
+  state.docCounts = {};
   state.roles = [];
   renderLots();
   renderAdminState();
