@@ -111,12 +111,14 @@ contract EcoOrigem {
     error TransferFailed();
 
     // [Recurso: Funcoes]
+    // constructor: roda uma vez no deploy: quem implanta vira o dono e a tesouraria.
     constructor() {
         owner = msg.sender;
         treasury = payable(msg.sender);
     }
 
     // [Recurso: Modificadores]
+    // onlyOwner: só o dono passa.
     modifier onlyOwner() {
         if (msg.sender != owner) {
             revert Unauthorized(msg.sender, Role.None);
@@ -124,6 +126,7 @@ contract EcoOrigem {
         _;
     }
 
+    // onlyRole: só quem tem o perfil passa.
     modifier onlyRole(Role role) {
         if (!hasRole(msg.sender, role)) {
             revert Unauthorized(msg.sender, role);
@@ -131,6 +134,7 @@ contract EcoOrigem {
         _;
     }
 
+    // lotExists: o lote precisa existir.
     modifier lotExists(uint256 lotId) {
         if (!lots[lotId].active) {
             revert LotNotFound(lotId);
@@ -138,6 +142,7 @@ contract EcoOrigem {
         _;
     }
 
+    // atStatus: o lote precisa estar na etapa esperada.
     modifier atStatus(uint256 lotId, Status expected) {
         Status current = lots[lotId].status;
         if (current != expected) {
@@ -146,11 +151,13 @@ contract EcoOrigem {
         _;
     }
 
+    // whenRunning: bloqueia a operação se o contrato estiver pausado.
     modifier whenRunning() {
         require(!paused, "Contrato pausado");
         _;
     }
 
+    // grantRole: o dono dá um perfil a uma carteira.
     /// @notice Concede um perfil operacional a uma carteira.
     /// @param account Carteira que receberá o perfil.
     /// @param role Perfil concedido.
@@ -160,6 +167,7 @@ contract EcoOrigem {
         emit RoleUpdated(account, role, true);
     }
 
+    // revokeRole: o dono tira um perfil de uma carteira.
     /// @notice Revoga um perfil operacional de uma carteira.
     /// @param account Carteira que perderá o perfil.
     /// @param role Perfil revogado.
@@ -169,6 +177,7 @@ contract EcoOrigem {
         emit RoleUpdated(account, role, false);
     }
 
+    // setPaused: o dono pausa ou retoma o contrato.
     /// @notice Pausa ou retoma as operações que alteram lotes.
     function setPaused(bool value) external onlyOwner {
         require(paused != value, "Estado de pausa inalterado");
@@ -176,6 +185,7 @@ contract EcoOrigem {
         emit PauseChanged(value, msg.sender);
     }
 
+    // registerLot: o produtor cadastra o lote, paga a taxa e escolhe o beneficiador.
     /// @notice Cadastra um lote e designa o beneficiador.
     /// @param product Produto rastreado.
     /// @param origin Local de origem.
@@ -221,6 +231,7 @@ contract EcoOrigem {
         return lotId;
     }
 
+    // recordProcessing: o beneficiador registra o processamento e escolhe o transportador.
     /// @notice Registra o beneficiamento e designa o transportador.
     function recordProcessing(
         uint256 lotId,
@@ -260,6 +271,7 @@ contract EcoOrigem {
         }
     }
 
+    // startTransport: o transportador inicia o transporte e escolhe o distribuidor.
     /// @notice Inicia o transporte e designa o distribuidor.
     /// @param temperatureMilliC Temperatura em milésimos de grau Celsius.
     function startTransport(
@@ -294,6 +306,7 @@ contract EcoOrigem {
         _advanceLot(lotId, Status.InTransit, destination);
     }
 
+    // confirmDelivery: o distribuidor confirma o recebimento do lote.
     /// @notice Confirma a entrega pelo distribuidor designado.
     function confirmDelivery(uint256 lotId, string calldata note)
         external
@@ -314,6 +327,7 @@ contract EcoOrigem {
         _advanceLot(lotId, Status.Distributed, note);
     }
 
+    // finalizeLot: o distribuidor encerra o lote.
     /// @notice Finaliza o lote depois do recebimento.
     function finalizeLot(uint256 lotId, string calldata note)
         external
@@ -332,6 +346,7 @@ contract EcoOrigem {
         _advanceLot(lotId, Status.Finalized, note);
     }
 
+    // attachDocument: quem está com o lote guarda o hash (e o link IPFS) de um documento.
     /// @notice Anexa a prova de integridade de um documento ao lote.
     function attachDocument(
         uint256 lotId,
@@ -357,6 +372,7 @@ contract EcoOrigem {
         actionCount[msg.sender] += 1;
     }
 
+    // withdrawFees: o dono saca as taxas acumuladas para a tesouraria.
     /// @notice Transfere as taxas acumuladas para a tesouraria imutável.
     function withdrawFees() external onlyOwner {
         uint256 amount = address(this).balance;
@@ -370,16 +386,19 @@ contract EcoOrigem {
         emit FeesWithdrawn(treasury, amount);
     }
 
+    // hasRole: consulta se a carteira tem o perfil.
     /// @notice Informa se uma carteira possui um perfil. O dono só administra.
     function hasRole(address account, Role role) public view returns (bool) {
         return roles[account][role];
     }
 
+    // totalLots: consulta quantos lotes existem.
     /// @notice Retorna o total de lotes cadastrados.
     function totalLots() public view returns (uint256) {
         return lotIds.length;
     }
 
+    // getLot: consulta um lote pelo número.
     /// @notice Retorna um lote pelo identificador.
     function getLot(uint256 lotId)
         external
@@ -390,6 +409,7 @@ contract EcoOrigem {
         return lots[lotId];
     }
 
+    // getLots: lista lotes por página (offset e limit).
     /// @notice Lista uma página de lotes para evitar laços sem limite.
     function getLots(uint256 offset, uint256 limit)
         external
@@ -413,6 +433,7 @@ contract EcoOrigem {
         }
     }
 
+    // getDocuments: lista os documentos de um lote.
     /// @notice Retorna os documentos registrados para um lote.
     function getDocuments(uint256 lotId)
         external
@@ -423,6 +444,7 @@ contract EcoOrigem {
         return lotDocuments[lotId];
     }
 
+    // getHistory: lista o histórico de etapas do lote.
     /// @notice Retorna o histórico de estados de um lote.
     function getHistory(uint256 lotId)
         external
@@ -433,6 +455,7 @@ contract EcoOrigem {
         return lotHistory[lotId];
     }
 
+    // statusLabel: converte o número da etapa em texto.
     /// @notice Traduz o enum de estado para texto legível.
     function statusLabel(Status status) public pure returns (string memory) {
         if (status == Status.Registered) return "Cadastrado";
@@ -442,6 +465,7 @@ contract EcoOrigem {
         else return "Finalizado";
     }
 
+    // _advanceLot: muda a etapa do lote e grava no histórico.
     function _advanceLot(
         uint256 lotId,
         Status status,
@@ -455,6 +479,7 @@ contract EcoOrigem {
         emit LotStatusChanged(lotId, status, msg.sender, note);
     }
 
+    // _appendHistory: acrescenta uma linha no histórico do lote.
     function _appendHistory(
         uint256 lotId,
         Status status,
@@ -470,6 +495,7 @@ contract EcoOrigem {
         );
     }
 
+    // _storeDocument: grava o documento e recusa hash repetido.
     function _storeDocument(
         uint256 lotId,
         bytes32 contentHash,
@@ -492,6 +518,7 @@ contract EcoOrigem {
         emit DocumentAttached(lotId, contentHash, msg.sender, ipfsUri);
     }
 
+    // _validateLotInput: confere os dados do cadastro do lote.
     function _validateLotInput(
         string calldata product,
         string calldata origin,
@@ -512,6 +539,7 @@ contract EcoOrigem {
         }
     }
 
+    // _validateRoleUpdate: confere se o perfil pode ser dado ou tirado.
     function _validateRoleUpdate(
         address account,
         Role role,
@@ -525,12 +553,14 @@ contract EcoOrigem {
         );
     }
 
+    // _validateIpfsUri: confere o tamanho do link IPFS.
     function _validateIpfsUri(string memory ipfsUri) private pure {
         bytes memory uri = bytes(ipfsUri);
         if (uri.length > 120) revert InvalidData("ipfsUri");
         if (uri.length > 0 && uri.length < 10) revert InvalidData("ipfsUri");
     }
 
+    // _validText: confere o tamanho de um texto.
     function _validText(
         string memory value,
         uint256 minLength,
