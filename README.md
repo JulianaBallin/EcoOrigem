@@ -29,15 +29,17 @@ A blockchain prova que um registro confirmado não foi alterado. Ela não garant
 
 ## Estado da publicação
 
-Os artefatos locais estão prontos e validados. As ações abaixo exigem a MetaMask e as contas externas da equipe.
+Contrato implantado e verificado na Sepolia, e frontend publicado na Vercel.
 
-| Item obrigatório | Estado em 07/11/2026 | Dado final |
+| Item obrigatório | Estado em 15/11/2026 | Dado final |
 | --- | --- | --- |
-| Contrato na Sepolia | Pendente de confirmação na MetaMask | Endereço: `PENDENTE` |
-| Transação e bloco do deploy | Pendente do deploy | Hash: `PENDENTE` · bloco: `PENDENTE` |
-| Código verificado no Etherscan | Pendente do deploy | URL: `PENDENTE` |
-| dApp na Vercel | Pendente de vincular o repositório | URL: `PENDENTE` |
-| Vídeo de 3 a 5 minutos | Pendente após a publicação | URL: `PENDENTE` |
+| Contrato na Sepolia | Implantado | Endereço: `0xe94f84131693D750ab098ABDe1E2b36369c9ea24` |
+| Transação e bloco do deploy | Confirmados | Hash: `0x18422fd8dc90dcbbf64997a56a3d97892e5724fe961802939ab1d17c29bed542` · bloco: `12141645` |
+| Código verificado no Etherscan | Verificado (Exact Match) | [sepolia.etherscan.io/address/0xe94f84131693D750ab098ABDe1E2b36369c9ea24#code](https://sepolia.etherscan.io/address/0xe94f84131693D750ab098ABDe1E2b36369c9ea24#code) |
+| dApp na Vercel | Publicada | [eco-origem.vercel.app](https://eco-origem.vercel.app) |
+| Vídeo de 3 a 5 minutos | Pendente | URL: `PENDENTE` |
+
+O contrato foi compilado no Remix com o compilador 0.8.34, optimizer desativado e EVM prague, que são as configurações da verificação no Etherscan.
 
 Depois do deploy confirmado pela equipe, registre endereço, bloco e hash públicos no frontend:
 
