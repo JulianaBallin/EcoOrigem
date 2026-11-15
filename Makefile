@@ -19,7 +19,7 @@ endif
 
 .DEFAULT_GOAL := help
 
-.PHONY: help menu install compile abi configure test validate security check serve clean
+.PHONY: help menu install compile abi configure test validate security check serve hash logs clean
 
 help: ## Lista os comandos disponíveis
 	@printf "$(C_OK)EcoOrigem - dApp Ethereum Sepolia$(C_RESET)\n\n"
@@ -57,6 +57,13 @@ check: ## Compila, sincroniza ABI, valida e testa todos os fluxos automatizados
 serve: ## Serve o frontend em http://127.0.0.1:8000 (altere com PORT=...)
 	@printf "$(C_STEP)Abra http://127.0.0.1:$(PORT) em um navegador com MetaMask.$(C_RESET)\n"
 	$(PYTHON) -m http.server $(PORT) --directory frontend --bind 127.0.0.1
+
+hash: ## Confere o SHA-256 de um arquivo com o contrato. Uso: make hash ARQUIVO=arq.pdf [LOTE=1]
+	@test -n "$(ARQUIVO)" || { printf "$(C_WARN)Informe ARQUIVO=caminho/do/arquivo.$(C_RESET)\n"; exit 1; }
+	@$(NODE) scripts/verificar-hash.mjs "$(ARQUIVO)" $(LOTE)
+
+logs: ## Acompanha os eventos do contrato em tempo real (Ctrl+C sai; --novos pula o histórico)
+	@$(NODE) scripts/acompanhar-logs.mjs $(ARGS)
 
 clean: ## Remove artefatos reproduzíveis e caches locais
 	rm -rf build node_modules
