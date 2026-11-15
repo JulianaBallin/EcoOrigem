@@ -12,6 +12,7 @@ import {
   formatQuantity,
   formatTimestamp,
   friendlyFallbackError,
+  revertReasonMessage,
   ipfsGatewayUrl,
   normalizeIpfsUri,
   normalizeLot,
@@ -656,7 +657,7 @@ async function sendTransaction(title, method, options = {}) {
     return receipt;
   } catch (error) {
     const raw = decodeContractError(error);
-    const message = raw.length > 240 ? `${raw.slice(0, 240)}...` : raw;
+    const message = raw.length > 320 ? `${raw.slice(0, 320)}...` : raw;
     setTransactionState("error", "Transação não concluída", message);
     throw error;
   }
@@ -702,25 +703,28 @@ function setTransactionState(type, title, detail, hash = "") {
 }
 
 function decodeContractError(error) {
+  console.error("Detalhe técnico do erro:", error);
   const data = findKnownRevertData(error);
   if (data) {
-    const fragment = errorFragmentForData(data);
-    if (fragment) {
-      try {
+    try {
+      if (data.startsWith("0x08c379a0")) {
+        // require("texto"): o motivo vem como Error(string).
+        const [reason] = Object.values(
+          state.web3.eth.abi.decodeParameters(["string"], `0x${data.slice(10)}`),
+        );
+        return revertReasonMessage(reason) || String(reason);
+      }
+      const fragment = errorFragmentForData(data);
+      if (fragment) {
         const values = state.web3.eth.abi.decodeParameters(
           fragment.inputs,
           `0x${data.slice(10)}`,
         );
         return customErrorMessage(fragment.name, values);
-      } catch {
-        // A mensagem genérica abaixo continua compreensível.
       }
+    } catch {
+      // Se não decodificar, cai na mensagem genérica abaixo.
     }
-  }
-  const direct = String(error?.message || "");
-  if (direct && !direct.toLowerCase().includes("execution reverted")) {
-    const friendly = friendlyFallbackError(error);
-    if (friendly.startsWith("A operação")) return direct;
   }
   return friendlyFallbackError(error);
 }
@@ -755,18 +759,23 @@ function errorFragmentForData(data) {
 
 function customErrorMessage(name, values) {
   const role = Number(values.requiredRole ?? values[1]);
+  const lotId = values.lotId ?? values[0];
   const messages = {
-    Unauthorized: `A carteira ${shortAddress(values.account ?? values[0])} não possui o perfil ${ROLE_LABELS[role] || "necessário"}.`,
-    InvalidStatus: `O lote #${values.lotId ?? values[0]} está em “${STATUS_LABELS[Number(values.current ?? values[1])]}” e a operação exige “${STATUS_LABELS[Number(values.expected ?? values[2])]}”.`,
-    LotNotFound: `O lote #${values.lotId ?? values[0]} não existe.`,
-    InvalidData: `O campo “${values.field ?? values[0]}” contém um valor inválido.`,
-    WrongFee: `A taxa enviada é diferente da taxa de cadastro definida pelo contrato.`,
-    DesignatedActorOnly: `Esta etapa pertence à carteira designada ${shortAddress(values.expected ?? values[1])}.`,
-    DuplicateDocument: "Esse documento já está registrado no lote.",
-    FinalizedLot: `O lote #${values.lotId ?? values[0]} está finalizado e não aceita alterações.`,
-    TransferFailed: "A transferência para a tesouraria falhou.",
+    Unauthorized: `A carteira ${shortAddress(values.account ?? values[0])} não tem o perfil ${ROLE_LABELS[role] || "necessário"} para esta ação. Troque para a conta certa na MetaMask ou peça ao administrador para conceder o perfil.`,
+    InvalidStatus: `O lote #${lotId} está em “${STATUS_LABELS[Number(values.current ?? values[1])]}”, mas esta ação só vale quando ele está em “${STATUS_LABELS[Number(values.expected ?? values[2])]}”. Siga a ordem do lote.`,
+    LotNotFound: `O lote #${lotId} não existe. Confira o número na aba Lotes.`,
+    InvalidData: `O campo “${values.field ?? values[0]}” está vazio ou fora do tamanho permitido. Corrija e envie de novo.`,
+    WrongFee: `A taxa enviada (${etherText(values.received ?? values[0])}) não é a exigida (${etherText(values.expected ?? values[1])}).`,
+    DesignatedActorOnly: `Esta etapa é da carteira ${shortAddress(values.expected ?? values[1])}, designada na etapa anterior. Troque para essa conta na MetaMask.`,
+    DuplicateDocument: "Esse documento já foi registrado neste lote. Escolha outro arquivo.",
+    FinalizedLot: `O lote #${lotId} já está finalizado e não aceita mais alterações.`,
+    TransferFailed: "A transferência das taxas para a tesouraria falhou. Tente de novo.",
   };
-  return messages[name] || "O contrato recusou a operação.";
+  return messages[name] || "O contrato recusou a operação. Confira os dados e tente de novo.";
+}
+
+function etherText(wei) {
+  return `${state.web3.utils.fromWei(String(wei), "ether")} ETH`;
 }
 
 function validateAddress(value, label) {

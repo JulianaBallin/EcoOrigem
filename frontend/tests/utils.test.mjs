@@ -3,6 +3,7 @@ import test from "node:test";
 import {
   dateToTimestamp,
   formatQuantity,
+  friendlyFallbackError,
   normalizeIpfsUri,
   normalizeLot,
   shortAddress,
@@ -51,4 +52,12 @@ test("normaliza a tupla de lote devolvida pelo Web3", () => {
 test("rejeita data de coleta futura", () => {
   assert.throws(() => dateToTimestamp("2999-01-01"));
   assert.match(dateToTimestamp("2024-01-01"), /^\d+$/);
+});
+
+test("traduz erros da carteira e do contrato em mensagens com orientação", () => {
+  assert.match(friendlyFallbackError({ code: 4001, message: "User rejected" }), /cancelou/);
+  assert.match(friendlyFallbackError(new Error("insufficient funds for gas")), /faucet/);
+  assert.match(friendlyFallbackError(new Error("Contrato pausado")), /pausado/);
+  assert.match(friendlyFallbackError(new Error("Invalid params input - Expected never")), /Ctrl\+Shift\+R/);
+  assert.match(friendlyFallbackError(new Error("Transaction not found")), /Atividade/);
 });

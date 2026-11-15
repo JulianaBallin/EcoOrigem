@@ -120,23 +120,50 @@ export function errorCode(error) {
   return Number(error?.code ?? error?.cause?.code ?? error?.innerError?.code ?? 0);
 }
 
+// Textos dos require() do contrato, já em linguagem de usuário.
+const REVERT_REASONS = [
+  ["contrato pausado", "O contrato está pausado pelo administrador. Aguarde a retomada."],
+  ["estado de pausa inalterado", "O contrato já está nesse estado de pausa."],
+  ["perfil ja esta", "Essa carteira já está nesse estado para o perfil escolhido."],
+  ["sem saldo para sacar", "O contrato não tem taxas acumuladas para sacar."],
+  ["limite entre", "O tamanho da página deve ficar entre 1 e 50."],
+];
+
+export function revertReasonMessage(reason) {
+  const text = String(reason || "").toLowerCase();
+  const found = REVERT_REASONS.find(([key]) => text.includes(key));
+  return found ? found[1] : "";
+}
+
 export function friendlyFallbackError(error) {
   const code = errorCode(error);
   const message = String(error?.message || "");
-  if (code === 4001 || message.toLowerCase().includes("user rejected")) {
-    return "A solicitação foi cancelada na MetaMask.";
+  const text = message.toLowerCase();
+  if (code === 4001 || text.includes("user rejected") || text.includes("user denied")) {
+    return "Você cancelou a operação na MetaMask. Nada foi enviado.";
   }
-  if (message.toLowerCase().includes("insufficient funds")) {
-    return "Saldo de SepoliaETH insuficiente para a taxa e o gas.";
+  if (code === -32002 || text.includes("already pending")) {
+    return "Já existe uma solicitação aberta na MetaMask. Abra a extensão e responda a ela.";
   }
-  if (message.toLowerCase().includes("contract pausado")) {
-    return "O contrato está pausado pelo administrador.";
+  if (text.includes("insufficient funds")) {
+    return "Saldo de SepoliaETH insuficiente para a taxa e o gas. Peça mais na faucet.";
   }
-  if (message.toLowerCase().includes("perfil ja esta")) {
-    return "Esse perfil já está no estado solicitado.";
+  const reason = revertReasonMessage(text);
+  if (reason) return reason;
+  if (text.includes("invalid params input")) {
+    return "A MetaMask recusou o formato da transação. Recarregue a página (Ctrl+Shift+R) e tente de novo.";
   }
-  if (message.toLowerCase().includes("sem saldo para sacar")) {
-    return "O contrato não possui taxas acumuladas para sacar.";
+  if (text.includes("transaction not found")) {
+    return "A transação ainda não apareceu na rede. Aguarde alguns segundos e confira em Atividade na MetaMask antes de tentar de novo.";
   }
-  return "A operação não foi concluída. Confira os dados e tente novamente.";
+  if (text.includes("nonce")) {
+    return "Há uma transação pendente nesta conta. Aguarde a confirmação ou cancele a pendente na MetaMask.";
+  }
+  if (text.includes("chain") || text.includes("network")) {
+    return "A MetaMask não está na rede Sepolia. Troque de rede e tente de novo.";
+  }
+  if (text.includes("failed to fetch") || text.includes("timeout")) {
+    return "Sem resposta da rede. Confira a internet e tente de novo.";
+  }
+  return "A operação não foi concluída. Confira os dados e tente de novo. Os detalhes técnicos estão no console do navegador (F12).";
 }
