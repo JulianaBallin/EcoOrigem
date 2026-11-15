@@ -32,3 +32,6 @@ __pycache__/
 *.py[cod]
 scripts/build_slides.py
 requirements-docs.txt
+
+# Dados do deploy na Sepolia, mantidos somente no ambiente local
+DADOS-DEPLOY-SEPOLIA.md

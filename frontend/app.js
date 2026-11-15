@@ -77,7 +77,7 @@ function configureContract() {
 
   if (!configured) {
     showBanner(
-      "Contrato ainda não configurado. Faça o deploy na Sepolia e execute npm run configure:contract -- <endereço> <bloco> <hash>.",
+      "O EcoOrigem ainda não está conectado a um contrato publicado na Sepolia. Consultas e cadastros ficam disponíveis assim que a publicação for concluída.",
       "warning",
     );
     return;
