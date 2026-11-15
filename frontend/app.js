@@ -35,10 +35,14 @@ const SEPOLIA_CHAIN_ID = "0xaa36a7";
 const ETHERSCAN = "https://sepolia.etherscan.io";
 const ZERO_HASH = `0x${"0".repeat(64)}`;
 const PAGE_LIMIT = 50;
+// Nó público da Sepolia: permite consultar lotes sem carteira (modo consulta).
+const READ_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 
 const state = {
   web3: null,
   contract: null,
+  readWeb3: null,
+  readContract: null,
   account: "",
   owner: "",
   chainId: "",
@@ -63,12 +67,23 @@ async function initialize() {
   setupDestination();
   renderAccess();
 
-  if (!window.ethereum || !window.Web3) {
-    showBanner(
-      "Instale ou habilite a MetaMask para usar a dApp. As consultas também dependem do provedor da carteira.",
-      "error",
-    );
+  if (!window.Web3) {
+    showBanner("Não foi possível carregar a biblioteca Web3.js. Recarregue a página.", "error");
     byId("connect-button").disabled = true;
+    return;
+  }
+  setupReader();
+
+  if (!window.ethereum) {
+    // Sem MetaMask: só consulta, pelo nó público.
+    showBanner(
+      "Modo consulta: você pode ver lotes e histórico sem carteira. Para cadastrar ou avançar etapas, instale a MetaMask e conecte uma conta com perfil.",
+      "warning",
+    );
+    state.web3 = state.readWeb3;
+    renderConnection();
+    renderAuthentication();
+    await refreshContractData();
     return;
   }
 
@@ -83,6 +98,31 @@ async function initialize() {
     state.account = state.web3.utils.toChecksumAddress(accounts[0]);
   }
   await refreshSession();
+}
+
+function contractIsConfigured(web3) {
+  return (
+    CONTRACT_ABI.length > 0 &&
+    web3.utils.isAddress(CONTRACT_ADDRESS) &&
+    !/^0x0{40}$/i.test(CONTRACT_ADDRESS)
+  );
+}
+
+// Leitura por nó público; a escrita continua exigindo a MetaMask.
+function setupReader() {
+  state.readWeb3 = new window.Web3(READ_RPC);
+  if (!contractIsConfigured(state.readWeb3)) return;
+  state.readContract = new state.readWeb3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS);
+  byId("contract-link").href = `${ETHERSCAN}/address/${CONTRACT_ADDRESS}`;
+  byId("contract-link").textContent = shortAddress(CONTRACT_ADDRESS);
+}
+
+// Usa a carteira quando está na Sepolia; senão, o nó público.
+function reader() {
+  if (state.contract && state.chainId === SEPOLIA_CHAIN_ID) {
+    return { web3: state.web3, contract: state.contract };
+  }
+  return { web3: state.readWeb3, contract: state.readContract };
 }
 
 function configureContract() {
@@ -177,6 +217,11 @@ function bindActions() {
 }
 
 async function connectWallet(authenticate) {
+  if (!window.ethereum) {
+    window.open("https://metamask.io/download/", "_blank", "noopener");
+    showToast("Instale a MetaMask e recarregue a página para operar.", "error");
+    return;
+  }
   try {
     const accounts = await window.ethereum.request({
       method: "eth_requestAccounts",
@@ -259,14 +304,11 @@ async function switchToSepolia() {
 async function refreshSession() {
   renderConnection();
   renderAuthentication();
-  if (!state.account || state.chainId !== SEPOLIA_CHAIN_ID || !state.contract) {
-    clearContractState();
-    return;
-  }
-
   try {
-    const balance = await state.web3.eth.getBalance(state.account);
-    byId("balance-value").textContent = `${formatEth(balance)} ETH`;
+    if (state.account && state.chainId === SEPOLIA_CHAIN_ID && state.contract) {
+      const balance = await state.web3.eth.getBalance(state.account);
+      byId("balance-value").textContent = `${formatEth(balance)} ETH`;
+    }
     await refreshContractData();
   } catch (error) {
     showToast("Não foi possível consultar a Sepolia. Tente novamente.", "error");
@@ -274,17 +316,21 @@ async function refreshSession() {
 }
 
 async function refreshContractData() {
-  if (!state.contract || state.chainId !== SEPOLIA_CHAIN_ID) return;
+  const { web3, contract } = reader();
+  if (!contract) {
+    clearContractState();
+    return;
+  }
   setBusyRefresh(true);
   try {
     const [owner, paused, fee, total, contractBalance] = await Promise.all([
-      state.contract.methods.owner().call(),
-      state.contract.methods.paused().call(),
-      state.contract.methods.REGISTRATION_FEE().call(),
-      state.contract.methods.totalLots().call(),
-      state.web3.eth.getBalance(CONTRACT_ADDRESS),
+      contract.methods.owner().call(),
+      contract.methods.paused().call(),
+      contract.methods.REGISTRATION_FEE().call(),
+      contract.methods.totalLots().call(),
+      web3.eth.getBalance(CONTRACT_ADDRESS),
     ]);
-    state.owner = state.web3.utils.toChecksumAddress(owner);
+    state.owner = web3.utils.toChecksumAddress(owner);
     state.paused = Boolean(paused);
     state.feeWei = String(fee);
 
@@ -311,7 +357,7 @@ async function loadRoles() {
   }
   const values = await Promise.all(
     [ROLE.PRODUCER, ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR].map((role) =>
-      state.contract.methods.hasRole(state.account, role).call(),
+      reader().contract.methods.hasRole(state.account, role).call(),
     ),
   );
   const roles = values
@@ -327,9 +373,10 @@ async function loadRoles() {
 // Quem tem cada perfil, lido dos eventos RoleUpdated (alimenta as listas).
 async function loadHolders() {
   try {
-    const latest = Number(await state.web3.eth.getBlockNumber());
+    const { web3, contract } = reader();
+    const latest = Number(await web3.eth.getBlockNumber());
     const fromBlock = Math.max(Number(DEPLOYMENT_BLOCK || 0), latest - 49_999, 0);
-    const events = await state.contract.getPastEvents("RoleUpdated", {
+    const events = await contract.getPastEvents("RoleUpdated", {
       fromBlock,
       toBlock: "latest",
     });
@@ -540,7 +587,7 @@ function renderHolderSelects() {
 }
 
 async function loadLots() {
-  state.lots = (await state.contract.methods.getLots(0, PAGE_LIMIT).call()).map(
+  state.lots = (await reader().contract.methods.getLots(0, PAGE_LIMIT).call()).map(
     normalizeLot,
   );
   renderLots();
@@ -558,7 +605,7 @@ function renderLots() {
   const body = byId("lots-body");
   if (!lots.length) {
     body.innerHTML = `<tr><td colspan="7" class="empty-state">${
-      state.contract ? "Nenhum lote encontrado." : "Configure e conecte o contrato."
+      reader().contract ? "Nenhum lote encontrado." : "Configure e conecte o contrato."
     }</td></tr>`;
     return;
   }
@@ -588,9 +635,9 @@ async function showLotDetail(lotId) {
   detail.scrollIntoView({ behavior: "smooth", block: "nearest" });
   try {
     const [rawLot, documents, history] = await Promise.all([
-      state.contract.methods.getLot(lotId).call(),
-      state.contract.methods.getDocuments(lotId).call(),
-      state.contract.methods.getHistory(lotId).call(),
+      reader().contract.methods.getLot(lotId).call(),
+      reader().contract.methods.getDocuments(lotId).call(),
+      reader().contract.methods.getHistory(lotId).call(),
     ]);
     const lot = normalizeLot(rawLot);
     detail.innerHTML = `
@@ -651,14 +698,15 @@ function renderDocuments(documents) {
 }
 
 async function loadEvents() {
-  if (!state.contract) return;
+  const { web3, contract } = reader();
+  if (!contract) return;
   const list = byId("events-list");
   list.innerHTML = '<p class="empty-state">Consultando os logs da Sepolia...</p>';
   try {
-    const latest = Number(await state.web3.eth.getBlockNumber());
+    const latest = Number(await web3.eth.getBlockNumber());
     const configuredStart = Number(DEPLOYMENT_BLOCK || 0);
     const fromBlock = Math.max(configuredStart, latest - 49_999, 0);
-    const events = await state.contract.getPastEvents("allEvents", {
+    const events = await contract.getPastEvents("allEvents", {
       fromBlock,
       toBlock: "latest",
     });
