@@ -635,17 +635,16 @@ async function sendTransaction(title, method, options = {}) {
   if (!dialog.open) dialog.showModal();
 
   try {
-    const transaction = method.send({ from: state.account, ...options });
-    transaction.on("transactionHash", (hash) => {
-      setTransactionState(
-        "pending",
-        "Transação enviada",
-        "Aguardando inclusão em um bloco da Sepolia.",
-        hash,
-      );
-    });
-    const receipt = await transaction;
-    const hash = receipt.transactionHash;
+    // O envio vai direto pela MetaMask: o Web3.js 4.0.3 manda "data" e "input"
+    // juntos e as versões novas da carteira recusam a transação.
+    const hash = await sendWithWallet(method, options);
+    setTransactionState(
+      "pending",
+      "Transação enviada",
+      "Aguardando inclusão em um bloco da Sepolia.",
+      hash,
+    );
+    const receipt = await waitForReceipt(hash);
     setTransactionState(
       "success",
       "Transação confirmada",
@@ -656,10 +655,36 @@ async function sendTransaction(title, method, options = {}) {
     await refreshContractData();
     return receipt;
   } catch (error) {
-    const message = decodeContractError(error);
+    const raw = decodeContractError(error);
+    const message = raw.length > 240 ? `${raw.slice(0, 240)}...` : raw;
     setTransactionState("error", "Transação não concluída", message);
     throw error;
   }
+}
+
+function sendWithWallet(method, options) {
+  const tx = {
+    from: state.account,
+    to: CONTRACT_ADDRESS,
+    data: method.encodeABI(),
+  };
+  if (options.value) tx.value = `0x${BigInt(options.value).toString(16)}`;
+  return window.ethereum.request({ method: "eth_sendTransaction", params: [tx] });
+}
+
+async function waitForReceipt(hash) {
+  // Consulta o recibo a cada 2 s, por até 5 minutos.
+  for (let attempt = 0; attempt < 150; attempt += 1) {
+    const receipt = await state.web3.eth.getTransactionReceipt(hash);
+    if (receipt) {
+      if (Number(receipt.status) !== 1) {
+        throw new Error("A operação foi recusada pelo contrato e nada foi alterado.");
+      }
+      return receipt;
+    }
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+  }
+  throw new Error("A transação ainda não foi confirmada. Confira o hash no Etherscan.");
 }
 
 function setTransactionState(type, title, detail, hash = "") {
