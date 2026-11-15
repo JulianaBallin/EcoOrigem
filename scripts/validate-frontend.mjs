@@ -9,6 +9,7 @@ const required = [
   "frontend/utils.js",
   "frontend/amazonas.js",
   "frontend/comunidades.js",
+  "frontend/brasil.js",
   "frontend/contrato.js",
   "frontend/assets/logo.png",
   "frontend/assets/favicon.png",

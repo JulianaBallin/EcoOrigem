@@ -225,3 +225,27 @@ export function roleHoldersFromEvents(events) {
     Object.entries(holders).map(([role, map]) => [role, [...map.values()]]),
   );
 }
+
+// Remove acentos e caixa para comparar o que a pessoa digita com a lista.
+export function normalizeText(text) {
+  return String(text ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+// Filtra a lista enquanto se digita: primeiro quem começa com o texto, depois quem contém.
+export function filterOptions(options, query, limit = 50) {
+  const q = normalizeText(query);
+  if (!q) return options.slice(0, limit);
+  const starts = [];
+  const contains = [];
+  for (const option of options) {
+    const text = normalizeText(option);
+    if (text.startsWith(q)) starts.push(option);
+    else if (text.includes(q)) contains.push(option);
+    if (starts.length >= limit) break;
+  }
+  return [...starts, ...contains].slice(0, limit);
+}

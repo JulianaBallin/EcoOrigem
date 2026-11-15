@@ -208,7 +208,8 @@
               <span class="step-number">02</span><h3>Iniciar transporte</h3><p>Perfil Transportador designado.</p>
               <label><span>Lote</span><select name="lotId" data-lot-step="transport" required></select></label>
               <label><span>Distribuidor</span><select name="distributor" data-holder-role="4" required></select></label>
-              <label><span>Destino</span><input name="destination" minlength="3" maxlength="120" required></label>
+              <label class="combo"><span>Município de destino</span><input id="dest-municipio" autocomplete="off" placeholder="Digite para filtrar (ex.: Manaus)" required><ul class="combo-list" role="listbox" hidden></ul></label>
+              <label class="combo"><span>Comunidade de destino <small>opcional</small></span><input id="dest-comunidade" autocomplete="off" maxlength="60" placeholder="Escolha na lista ou digite"><ul class="combo-list" role="listbox" hidden></ul></label>
               <label><span>Temperatura em °C</span><input name="temperature" type="number" min="-30" max="60" step="0.001" value="24" required></label>
               <button class="button primary full" type="submit">Iniciar transporte</button>
             </form>

@@ -5,6 +5,7 @@ import {
 } from "./contrato.js";
 import { MUNICIPIOS_AM, PRODUTOS } from "./amazonas.js";
 import { COMUNIDADES_AM } from "./comunidades.js";
+import { MUNICIPIOS_BR } from "./brasil.js";
 import {
   FORM_ROLES,
   ROLE,
@@ -15,6 +16,7 @@ import {
   escapeHtml,
   formatQuantity,
   formatTimestamp,
+  filterOptions,
   friendlyFallbackError,
   hasAnyRole,
   lockMessage,
@@ -58,6 +60,7 @@ async function initialize() {
   bindActions();
   setMaximumHarvestDate();
   fillStaticLists();
+  setupDestination();
   renderAccess();
 
   if (!window.ethereum || !window.Web3) {
@@ -334,6 +337,98 @@ async function loadHolders() {
   } catch (error) {
     console.error("Não foi possível listar as carteiras por perfil:", error);
   }
+}
+
+// Lista "Município - UF" de todo o Brasil, usada no destino do transporte.
+const DESTINOS = Object.entries(MUNICIPIOS_BR).flatMap(([uf, names]) =>
+  names.map((name) => `${name} - ${uf}`),
+);
+const communityCache = {};
+
+async function loadCommunities(uf, municipality) {
+  if (uf === "AM") return COMUNIDADES_AM[municipality] || [];
+  try {
+    if (!communityCache[uf]) {
+      const response = await fetch(`data/comunidades/${uf}.json`);
+      communityCache[uf] = await response.json();
+    }
+  } catch (error) {
+    console.warn("Comunidades indisponíveis para", uf, error);
+    return [];
+  }
+  return communityCache[uf][municipality] || [];
+}
+
+// Campo com lista que diminui conforme se digita (sem diferenciar acentos).
+function attachCombobox(input, getOptions, onPick) {
+  const list = input.parentElement.querySelector(".combo-list");
+  let active = -1;
+  const close = () => {
+    list.hidden = true;
+    active = -1;
+  };
+  const render = () => {
+    const matches = filterOptions(getOptions(), input.value);
+    list.innerHTML = matches
+      .map((text) => `<li role="option" data-value="${escapeHtml(text)}">${escapeHtml(text)}</li>`)
+      .join("");
+    list.hidden = !matches.length;
+    active = -1;
+  };
+  const pick = (value) => {
+    input.value = value;
+    close();
+    if (onPick) onPick(value);
+  };
+  input.addEventListener("input", () => {
+    if (onPick) onPick("");
+    render();
+  });
+  input.addEventListener("focus", render);
+  input.addEventListener("blur", () => setTimeout(close, 120));
+  list.addEventListener("mousedown", (event) => {
+    const item = event.target.closest("li");
+    if (item) {
+      event.preventDefault();
+      pick(item.dataset.value);
+    }
+  });
+  input.addEventListener("keydown", (event) => {
+    const items = [...list.querySelectorAll("li")];
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (list.hidden) render();
+      active = (active + (event.key === "ArrowDown" ? 1 : -1) + items.length) % (items.length || 1);
+      items.forEach((item, i) => item.classList.toggle("active", i === active));
+      items[active]?.scrollIntoView({ block: "nearest" });
+    } else if (event.key === "Enter" && !list.hidden && active >= 0) {
+      event.preventDefault();
+      pick(items[active].dataset.value);
+    } else if (event.key === "Escape") {
+      close();
+    }
+  });
+}
+
+function setupDestination() {
+  const municipality = byId("dest-municipio");
+  const community = byId("dest-comunidade");
+  let names = [];
+  attachCombobox(municipality, () => DESTINOS, async (value) => {
+    community.value = "";
+    names = [];
+    const match = DESTINOS.includes(value) ? value.split(" - ") : null;
+    if (match) names = await loadCommunities(match.at(-1), match.slice(0, -1).join(" - "));
+  });
+  attachCombobox(community, () => names);
+}
+
+// Monta "Comunidade, Município - UF"; devolve vazio se o município não é da lista.
+function readDestination() {
+  const place = byId("dest-municipio").value.trim();
+  if (!DESTINOS.includes(place)) return "";
+  const community = byId("dest-comunidade").value.trim();
+  return community ? `${community}, ${place}` : place;
 }
 
 function buildOrigin(municipality, community) {
@@ -649,11 +744,16 @@ async function submitTransport(event) {
   const data = new FormData(form);
   try {
     await requireWriteAccess();
+    const destination = readDestination();
+    if (!destination) {
+      showToast("Escolha o município de destino na lista.", "error");
+      return;
+    }
     const temperature = Math.round(Number(data.get("temperature")) * 1000);
     const method = state.contract.methods.startTransport(
       data.get("lotId"),
       validateAddress(data.get("distributor"), "distribuidor"),
-      data.get("destination").trim(),
+      destination,
       String(temperature),
     );
     await sendTransaction("Início do transporte", method);

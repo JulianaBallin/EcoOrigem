@@ -349,3 +349,9 @@ dialog::backdrop { background: rgba(5, 31, 19, 0.58); backdrop-filter: blur(5px)
 form.locked { opacity: 0.55; }
 .lock-note { margin: 0 0 0.6rem; padding: 0.6rem 0.8rem; border-radius: 10px; color: var(--warning); background: var(--warning-soft); font-size: 0.8rem; font-weight: 700; line-height: 1.35; }
 select:disabled, button:disabled { cursor: not-allowed; }
+
+/* Campo com lista filtrada enquanto se digita */
+label.combo { position: relative; }
+.combo-list { position: absolute; z-index: 30; left: 0; right: 0; top: 100%; max-height: 240px; margin: 0.2rem 0 0; padding: 0.25rem; overflow-y: auto; list-style: none; border: 1px solid var(--line); border-radius: 12px; background: white; box-shadow: var(--shadow-lg); }
+.combo-list li { padding: 0.5rem 0.65rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+.combo-list li:hover, .combo-list li.active { color: white; background: var(--forest-800); }

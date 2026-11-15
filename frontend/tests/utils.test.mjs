@@ -2,10 +2,14 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { MUNICIPIOS_AM, PRODUTOS } from "../amazonas.js";
 import { COMUNIDADES_AM } from "../comunidades.js";
+import { MUNICIPIOS_BR } from "../brasil.js";
+import fs from "node:fs";
 import {
   dateToTimestamp,
   formatQuantity,
+  filterOptions,
   friendlyFallbackError,
+  normalizeText,
   hasAnyRole,
   lockMessage,
   lotsForStep,
@@ -111,4 +115,28 @@ test("toda comunidade pertence a um dos 62 municípios e cabe no contrato", () =
   assert.ok(nomes.length > 3000);
   // origem final = "comunidade, município - AM" precisa ter até 120 caracteres
   assert.ok(nomes.every((n) => n.length <= 60));
+});
+
+test("filtro do destino ignora acento e caixa e diminui conforme se digita", () => {
+  const lista = ["Manaus - AM", "Manacapuru - AM", "Maués - AM", "Mauá - SP", "Parintins - AM"];
+  assert.equal(normalizeText("  Maués "), "maues");
+  assert.deepEqual(filterOptions(lista, "mana"), ["Manaus - AM", "Manacapuru - AM"]);
+  assert.deepEqual(filterOptions(lista, "maues"), ["Maués - AM"]);
+  assert.deepEqual(filterOptions(lista, "sp"), ["Mauá - SP"]);
+  assert.equal(filterOptions(lista, "").length, 5);
+  assert.equal(filterOptions(lista, "zzz").length, 0);
+});
+
+test("municípios do Brasil e arquivos de comunidades por UF", () => {
+  const ufs = Object.keys(MUNICIPIOS_BR);
+  assert.equal(ufs.length, 27);
+  assert.equal(Object.values(MUNICIPIOS_BR).flat().length, 5571);
+  for (const uf of ufs) {
+    const arquivo = new URL(`../data/comunidades/${uf}.json`, import.meta.url);
+    const dados = JSON.parse(fs.readFileSync(arquivo, "utf8"));
+    assert.ok(Object.keys(dados).every((m) => MUNICIPIOS_BR[uf].includes(m)), uf);
+    const origem = Object.values(dados).flat();
+    // destino final "comunidade, município - UF" precisa caber em 120 caracteres
+    assert.ok(origem.every((n) => n.length <= 60), uf);
+  }
 });
