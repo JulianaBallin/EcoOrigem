@@ -132,7 +132,7 @@ test("municípios do Brasil e arquivos de comunidades por UF", () => {
   assert.equal(ufs.length, 27);
   assert.equal(Object.values(MUNICIPIOS_BR).flat().length, 5571);
   for (const uf of ufs) {
-    const arquivo = new URL(`../data/comunidades/${uf}.json`, import.meta.url);
+    const arquivo = new URL(`../dados/comunidades/${uf}.json`, import.meta.url);
     const dados = JSON.parse(fs.readFileSync(arquivo, "utf8"));
     assert.ok(Object.keys(dados).every((m) => MUNICIPIOS_BR[uf].includes(m)), uf);
     const origem = Object.values(dados).flat();

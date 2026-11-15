@@ -349,7 +349,7 @@ async function loadCommunities(uf, municipality) {
   if (uf === "AM") return COMUNIDADES_AM[municipality] || [];
   try {
     if (!communityCache[uf]) {
-      const response = await fetch(`data/comunidades/${uf}.json`);
+      const response = await fetch(`dados/comunidades/${uf}.json`);
       communityCache[uf] = await response.json();
     }
   } catch (error) {
