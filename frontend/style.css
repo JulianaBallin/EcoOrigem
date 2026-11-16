@@ -364,3 +364,8 @@ label.combo { position: relative; }
 .verify-result .mono { font-size: 0.72rem; }
 
 .role-badge { color: var(--forest-800); background: var(--mint-100); }
+
+/* Hash de transação: copiar e abrir no Etherscan */
+.event-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+.copy-btn { display: inline-flex; align-items: center; min-height: 32px; padding: 0.25rem 0.7rem; border: 1px solid var(--line); border-radius: 9px; color: var(--forest-800); background: white; font-size: 0.75rem; font-weight: 800; text-decoration: none; cursor: pointer; }
+.copy-btn:hover { background: var(--mint-50); border-color: var(--forest-800); }

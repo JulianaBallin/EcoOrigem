@@ -70,6 +70,9 @@ async function initialize() {
   fillStaticLists();
   setupDestination();
   renderAccess();
+  // Link direto para uma aba, por exemplo /#eventos.
+  const wanted = location.hash.slice(1);
+  if (wanted && byId(wanted)?.classList.contains("panel")) openPanel(wanted);
 
   if (!window.Web3) {
     showBanner("Não foi possível carregar a biblioteca Web3.js. Recarregue a página.", "error");
@@ -182,6 +185,7 @@ function bindNavigation() {
 }
 
 function openPanel(id) {
+  if (id === "eventos") loadEvents();
   const target = document.querySelector(`[data-tab="${id}"]`);
   if (target?.classList.contains("locked")) {
     showToast(target.title, "error");
@@ -198,6 +202,12 @@ function openPanel(id) {
 }
 
 function bindActions() {
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-copy]");
+    if (!button) return;
+    event.preventDefault();
+    copyText(button.dataset.copy);
+  });
   byId("connect-button").addEventListener("click", () => connectWallet(true));
   byId("authenticate-button").addEventListener("click", authenticateWallet);
   byId("network-button").addEventListener("click", switchToSepolia);
@@ -348,6 +358,8 @@ async function refreshContractData() {
     await Promise.all([loadRoles(), loadLots(), loadHolders()]);
     renderAccessTable();
     renderAdminState();
+    // Se a aba Eventos já está aberta (ou veio por link direto), carrega a lista agora.
+    if (!byId("eventos").hidden) loadEvents();
     renderAccess();
   } catch (error) {
     showToast(decodeContractError(error), "error");
@@ -829,7 +841,7 @@ function renderEvent(event) {
     .slice(0, 4)
     .map(([key, value]) => `${key}: ${formatEventValue(value)}`)
     .join(" · ");
-  return `<article class="event-item"><span class="history-marker">E</span><div><strong>${escapeHtml(event.event || "Evento")}</strong><small>${escapeHtml(important)}</small><small>Bloco ${event.blockNumber}</small></div><a class="item-time" href="${ETHERSCAN}/tx/${event.transactionHash}" target="_blank" rel="noreferrer">Etherscan</a></article>`;
+  return `<article class="event-item"><span class="history-marker">E</span><div><strong>${escapeHtml(event.event || "Evento")}</strong><small>${escapeHtml(important)}</small><small>Bloco ${event.blockNumber}</small><small class="mono">Tx ${escapeHtml(shortAddress(event.transactionHash, 10, 8))}</small></div><div class="event-actions"><button type="button" class="copy-btn" data-copy="${escapeHtml(event.transactionHash)}">Copiar hash</button><a class="copy-btn" href="${ETHERSCAN}/tx/${event.transactionHash}" target="_blank" rel="noreferrer">Etherscan</a></div></article>`;
 }
 
 function formatEventValue(value) {
@@ -1107,11 +1119,21 @@ async function waitForReceipt(hash) {
   throw new Error("A transação ainda não foi confirmada. Confira o hash no Etherscan.");
 }
 
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast("Hash copiado. Cole na busca do Etherscan.");
+  } catch (error) {
+    showToast("Não foi possível copiar. Selecione o texto e use Ctrl+C.", "error");
+  }
+}
+
 function setTransactionState(type, title, detail, hash = "") {
   const icon = type === "pending" ? '<span class="tx-spinner"></span>' : `<span class="event-check">${type === "success" ? "✓" : "!"}</span>`;
   byId("transaction-body").innerHTML = `
     <div class="transaction-state ${type}">${icon}<div><strong>${escapeHtml(title)}</strong><p>${escapeHtml(detail)}</p></div></div>
-    ${hash ? `<a class="tx-hash" href="${ETHERSCAN}/tx/${hash}" target="_blank" rel="noreferrer">${escapeHtml(hash)}</a>` : ""}`;
+    ${hash ? `<a class="tx-hash" href="${ETHERSCAN}/tx/${hash}" target="_blank" rel="noreferrer">${escapeHtml(hash)}</a>
+    <div class="event-actions"><button type="button" class="copy-btn" data-copy="${escapeHtml(hash)}">Copiar hash</button><a class="copy-btn" href="${ETHERSCAN}/tx/${hash}" target="_blank" rel="noreferrer">Abrir no Etherscan</a></div>` : ""}`;
 }
 
 function decodeContractError(error) {
