@@ -362,3 +362,5 @@ label.combo { position: relative; }
 .verify-result[data-state="ok"] { color: var(--forest-800); background: var(--mint-100); border: 1px solid var(--mint-100); }
 .verify-result[data-state="fail"] { color: var(--danger); background: var(--danger-soft); }
 .verify-result .mono { font-size: 0.72rem; }
+
+.role-badge { color: var(--forest-800); background: var(--mint-100); }

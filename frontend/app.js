@@ -6,6 +6,7 @@ import {
 import { MUNICIPIOS_AM, PRODUTOS } from "./amazonas.js";
 import { COMUNIDADES_AM } from "./comunidades.js";
 import { MUNICIPIOS_BR } from "./brasil.js";
+import { NOMES } from "./nomes.js";
 import {
   FORM_ROLES,
   ROLE,
@@ -16,6 +17,7 @@ import {
   escapeHtml,
   formatQuantity,
   formatTimestamp,
+  buildAccessRows,
   filterOptions,
   findDocumentByHash,
   friendlyFallbackError,
@@ -344,6 +346,7 @@ async function refreshContractData() {
     byId("form-fee").textContent = `${formatEth(fee)} SepoliaETH`;
 
     await Promise.all([loadRoles(), loadLots(), loadHolders()]);
+    renderAccessTable();
     renderAdminState();
     renderAccess();
   } catch (error) {
@@ -479,6 +482,26 @@ function readDestination() {
   if (!DESTINOS.includes(place)) return "";
   const community = byId("dest-comunidade").value.trim();
   return community ? `${community}, ${place}` : place;
+}
+
+// Tabela pública de acessos: nome, carteira e perfis de cada endereço.
+function renderAccessTable() {
+  const body = byId("access-body");
+  const rows = buildAccessRows(state.holders, state.owner, NOMES);
+  if (!rows.length) {
+    body.innerHTML = '<tr><td colspan="3" class="empty-state">Nenhum acesso encontrado.</td></tr>';
+    return;
+  }
+  body.innerHTML = rows
+    .map(
+      (row) => `
+        <tr>
+          <td><strong>${escapeHtml(row.name || "Sem nome")}</strong></td>
+          <td><a class="mono" href="${ETHERSCAN}/address/${row.address}" target="_blank" rel="noreferrer">${escapeHtml(shortAddress(row.address))}</a></td>
+          <td>${row.roles.map((role) => `<span class="status-badge role-badge">${escapeHtml(role)}</span>`).join(" ")}</td>
+        </tr>`,
+    )
+    .join("");
 }
 
 function buildOrigin(municipality, community) {

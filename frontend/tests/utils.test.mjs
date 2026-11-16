@@ -7,6 +7,7 @@ import fs from "node:fs";
 import {
   dateToTimestamp,
   formatQuantity,
+  buildAccessRows,
   filterOptions,
   findDocumentByHash,
   friendlyFallbackError,
@@ -150,4 +151,15 @@ test("compara o hash do arquivo com os documentos registrados no lote", () => {
   assert.equal(findDocumentByHash(docs, hashB), null);
   assert.equal(findDocumentByHash([], hashA), null);
   assert.equal(findDocumentByHash([[hashB, "u", "Nota", "0x2", "2"]], hashB)?.description, "Nota");
+});
+
+test("lista de acessos junta os perfis de cada carteira e aplica os nomes", () => {
+  const holders = { 1: ["0xAAA"], 2: ["0xaaa", "0xBBB"], 3: [], 4: ["0xCCC"] };
+  const rows = buildAccessRows(holders, "0xOwner", { "0xaaa": "Ana", "0xccc": "Fernando" });
+  const ana = rows.find((r) => r.address.toLowerCase() === "0xaaa");
+  assert.deepEqual(ana.roles, ["Produtor", "Beneficiador"]);
+  assert.equal(ana.name, "Ana");
+  assert.equal(rows.find((r) => r.address === "0xBBB").name, "");
+  assert.equal(rows[0].roles[0], "Proprietário");
+  assert.equal(rows.length, 4);
 });

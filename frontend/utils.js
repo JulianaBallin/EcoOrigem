@@ -267,3 +267,18 @@ export function findDocumentByHash(documents, hash) {
   }
   return null;
 }
+
+// Monta a lista de acessos: uma linha por carteira, com todos os perfis que ela tem.
+export function buildAccessRows(holders, owner, names = {}) {
+  const rows = new Map();
+  const add = (address, label) => {
+    const key = String(address).toLowerCase();
+    if (!rows.has(key)) rows.set(key, { address, roles: [], name: names[key] || "" });
+    rows.get(key).roles.push(label);
+  };
+  if (owner) add(owner, "Proprietário");
+  for (const role of [ROLE.PRODUCER, ROLE.PROCESSOR, ROLE.CARRIER, ROLE.DISTRIBUTOR]) {
+    for (const address of holders[role] || []) add(address, ROLE_LABELS[role]);
+  }
+  return [...rows.values()];
+}

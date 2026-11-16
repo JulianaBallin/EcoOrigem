@@ -114,6 +114,7 @@
         <button class="tab" type="button" data-tab="operacoes">Operações</button>
         <button class="tab" type="button" data-tab="documentos">Documentos</button>
         <button class="tab" type="button" data-tab="eventos">Eventos</button>
+        <button class="tab" type="button" data-tab="acessos">Acessos</button>
         <button class="tab admin-tab" type="button" data-tab="administracao" hidden>Administração</button>
       </nav>
 
@@ -260,6 +261,21 @@
         <section id="eventos" class="panel" aria-labelledby="events-title" hidden>
           <div class="section-heading"><div><span class="eyebrow">LOGS DA SEPOLIA</span><h2 id="events-title">Eventos do contrato</h2></div><button id="events-refresh" class="button secondary" type="button">Buscar eventos</button></div>
           <article class="content-card"><div id="events-list" class="event-list"><p class="empty-state">Os eventos aparecerão depois da conexão.</p></div></article>
+        </section>
+
+        <section id="acessos" class="panel" aria-labelledby="access-title" hidden>
+          <div class="section-heading">
+            <div><span class="eyebrow">TRANSPARÊNCIA</span><h2 id="access-title">Quem tem acesso</h2><p>Carteiras com perfil no contrato, lidas dos eventos RoleUpdated. O nome é só uma identificação da equipe: a blockchain guarda apenas o endereço.</p></div>
+            <button class="button secondary refresh-button" type="button">Atualizar acessos</button>
+          </div>
+          <article class="content-card">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Nome</th><th>Carteira</th><th>Perfil</th></tr></thead>
+                <tbody id="access-body"><tr><td colspan="3" class="empty-state">Carregando os acessos...</td></tr></tbody>
+              </table>
+            </div>
+          </article>
         </section>
 
         <section id="administracao" class="panel" aria-labelledby="admin-title" hidden>
