@@ -37,7 +37,7 @@ Contrato implantado e verificado na Sepolia, e frontend publicado na Vercel.
 | Transação e bloco do deploy | Confirmados | Hash: `0x18422fd8dc90dcbbf64997a56a3d97892e5724fe961802939ab1d17c29bed542` · bloco: `12141645` |
 | Código verificado no Etherscan | Verificado (Exact Match) | [sepolia.etherscan.io/address/0xe94f84131693D750ab098ABDe1E2b36369c9ea24#code](https://sepolia.etherscan.io/address/0xe94f84131693D750ab098ABDe1E2b36369c9ea24#code) |
 | dApp na Vercel | Publicada | [eco-origem.vercel.app](https://eco-origem.vercel.app) |
-| Vídeo de 3 a 5 minutos | Pendente | URL: [video](https://drive.google.com/file/d/1Td9U_BzrAaRoQBL_iXTn8K4B8d-EVSND/view?usp=sharing) |
+| Vídeo de 3 a 5 minutos | Upload no Drive | URL: [video](https://drive.google.com/file/d/1Td9U_BzrAaRoQBL_iXTn8K4B8d-EVSND/view?usp=sharing) |
 
 O contrato foi compilado no Remix com o compilador 0.8.34, optimizer desativado e EVM prague, que são as configurações da verificação no Etherscan.
 
