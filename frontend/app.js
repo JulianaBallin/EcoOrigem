@@ -406,26 +406,66 @@ function getEventSources() {
   return eventSources;
 }
 
+// Guarda a última leitura boa no navegador, para a lista não ficar vazia se a rede falhar.
+const eventCacheKey = (name) => `eco-eventos:${CONTRACT_ADDRESS}:${name}`;
+
+function saveEventCache(name, events) {
+  try {
+    const slim = events.map((event) => ({
+      event: event.event,
+      blockNumber: String(event.blockNumber),
+      transactionHash: event.transactionHash,
+      returnValues: Object.fromEntries(
+        Object.entries(event.returnValues || {})
+          .filter(([key]) => Number.isNaN(Number(key)))
+          .map(([key, value]) => [key, typeof value === "bigint" ? value.toString() : value]),
+      ),
+    }));
+    localStorage.setItem(eventCacheKey(name), JSON.stringify(slim));
+  } catch (error) {
+    console.warn("Não foi possível guardar o cache de eventos:", error);
+  }
+}
+
+function loadEventCache(name) {
+  try {
+    const raw = localStorage.getItem(eventCacheKey(name));
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
 // Busca os eventos do bloco de implantação até agora, em pedaços de 10 mil blocos.
-// Se um nó recusar (histórico apagado, limite), tenta o próximo.
+// Se um nó recusar (histórico apagado, limite), tenta de novo e depois o próximo.
+// Se todos falharem, usa a última leitura guardada (marcada com fromCache).
 async function fetchEvents(eventName) {
   const sources = [...getEventSources(), reader()];
   let lastError;
   for (const { web3, contract } of sources) {
     if (!contract) continue;
-    try {
-      const latest = Number(await web3.eth.getBlockNumber());
-      const start = Math.max(Number(DEPLOYMENT_BLOCK || 0), 0);
-      const events = [];
-      for (let from = start; from <= latest; from += 10_000) {
-        const to = Math.min(from + 9_999, latest);
-        events.push(...(await contract.getPastEvents(eventName, { fromBlock: from, toBlock: to })));
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const latest = Number(await web3.eth.getBlockNumber());
+        const start = Math.max(Number(DEPLOYMENT_BLOCK || 0), 0);
+        const events = [];
+        for (let from = start; from <= latest; from += 10_000) {
+          const to = Math.min(from + 9_999, latest);
+          events.push(...(await contract.getPastEvents(eventName, { fromBlock: from, toBlock: to })));
+        }
+        saveEventCache(eventName, events);
+        return events;
+      } catch (error) {
+        lastError = error;
+        console.warn("Falha ao ler eventos, tentando de novo:", error);
+        await new Promise((resolve) => setTimeout(resolve, 1500));
       }
-      return events;
-    } catch (error) {
-      lastError = error;
-      console.warn("Falha ao ler eventos, tentando outra fonte:", error);
     }
+  }
+  const cached = loadEventCache(eventName);
+  if (cached) {
+    cached.fromCache = true;
+    return cached;
   }
   throw lastError || new Error("Sem contrato configurado.");
 }
@@ -851,11 +891,16 @@ async function loadEvents() {
       list.innerHTML = '<p class="empty-state">Nenhum evento encontrado desde a implantação.</p>';
       return;
     }
-    list.innerHTML = events
-      .slice(-100)
-      .reverse()
-      .map((event) => renderEvent(event))
-      .join("");
+    const notice = events.fromCache
+      ? '<p class="empty-state">A rede não respondeu. Mostrando a última leitura guardada neste navegador.</p>'
+      : "";
+    list.innerHTML =
+      notice +
+      events
+        .slice(-100)
+        .reverse()
+        .map((event) => renderEvent(event))
+        .join("");
   } catch (error) {
     list.innerHTML = `<p class="empty-state">Não foi possível ler os eventos agora. Atualize em alguns segundos.</p>`;
     console.error("Eventos:", error);
