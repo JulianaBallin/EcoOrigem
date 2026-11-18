@@ -51,8 +51,12 @@ console.log(`  Contrato: ${CONTRACT_ADDRESS}\n  Aperte Ctrl+C para sair.\n`);
 try {
   let latest = Number(await retry(() => web3.eth.getBlockNumber()));
   if (!onlyNew) {
-    const start = Math.max(Number(DEPLOYMENT_BLOCK || 0), latest - 49_999, 0);
-    const history = await retry(() => contract.getPastEvents("allEvents", { fromBlock: start, toBlock: latest }));
+    const start = Math.max(Number(DEPLOYMENT_BLOCK || 0), 0);
+    const history = [];
+    for (let from = start; from <= latest; from += 10_000) {
+      const to = Math.min(from + 9_999, latest);
+      history.push(...(await retry(() => contract.getPastEvents("allEvents", { fromBlock: from, toBlock: to }))));
+    }
     console.log(color.dim(`Histórico recente (${history.length} eventos, mostrando os últimos 40):`));
     history.slice(-40).forEach(show);
     console.log(color.dim("\nAguardando novos eventos...\n"));

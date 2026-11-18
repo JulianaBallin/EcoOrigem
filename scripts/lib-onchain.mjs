@@ -2,7 +2,8 @@
 import { Web3 } from "web3";
 import { CONTRACT_ABI, CONTRACT_ADDRESS, DEPLOYMENT_BLOCK } from "../frontend/contrato.js";
 
-export const RPC = process.env.SEPOLIA_RPC || "https://ethereum-sepolia-rpc.publicnode.com";
+// Tenderly primeiro: o nó publicnode às vezes apaga o histórico antigo de eventos.
+export const RPC = process.env.SEPOLIA_RPC || "https://sepolia.gateway.tenderly.co";
 export const ETHERSCAN = "https://sepolia.etherscan.io";
 export { CONTRACT_ADDRESS, DEPLOYMENT_BLOCK };
 

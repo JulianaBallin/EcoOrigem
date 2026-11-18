@@ -40,6 +40,11 @@ const ZERO_HASH = `0x${"0".repeat(64)}`;
 const PAGE_LIMIT = 50;
 // Nó público da Sepolia: permite consultar lotes sem carteira (modo consulta).
 const READ_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+// Nós públicos com histórico de eventos; os mais antigos podem ser apagados por um nó, então há reserva.
+const EVENT_RPCS = [
+  "https://sepolia.gateway.tenderly.co",
+  "https://ethereum-sepolia-rpc.publicnode.com",
+];
 
 const state = {
   web3: null,
@@ -389,16 +394,45 @@ async function loadRoles() {
 }
 
 // Quem tem cada perfil, lido dos eventos RoleUpdated (alimenta as listas).
+// Fontes de leitura de eventos: nós públicos primeiro, carteira por último.
+let eventSources = null;
+function getEventSources() {
+  if (!eventSources) {
+    eventSources = EVENT_RPCS.map((url) => {
+      const web3 = new window.Web3(url);
+      return { web3, contract: new web3.eth.Contract(CONTRACT_ABI, CONTRACT_ADDRESS) };
+    });
+  }
+  return eventSources;
+}
+
+// Busca os eventos do bloco de implantação até agora, em pedaços de 10 mil blocos.
+// Se um nó recusar (histórico apagado, limite), tenta o próximo.
+async function fetchEvents(eventName) {
+  const sources = [...getEventSources(), reader()];
+  let lastError;
+  for (const { web3, contract } of sources) {
+    if (!contract) continue;
+    try {
+      const latest = Number(await web3.eth.getBlockNumber());
+      const start = Math.max(Number(DEPLOYMENT_BLOCK || 0), 0);
+      const events = [];
+      for (let from = start; from <= latest; from += 10_000) {
+        const to = Math.min(from + 9_999, latest);
+        events.push(...(await contract.getPastEvents(eventName, { fromBlock: from, toBlock: to })));
+      }
+      return events;
+    } catch (error) {
+      lastError = error;
+      console.warn("Falha ao ler eventos, tentando outra fonte:", error);
+    }
+  }
+  throw lastError || new Error("Sem contrato configurado.");
+}
+
 async function loadHolders() {
   try {
-    const { web3, contract } = reader();
-    const latest = Number(await web3.eth.getBlockNumber());
-    const fromBlock = Math.max(Number(DEPLOYMENT_BLOCK || 0), latest - 49_999, 0);
-    const events = await contract.getPastEvents("RoleUpdated", {
-      fromBlock,
-      toBlock: "latest",
-    });
-    state.holders = roleHoldersFromEvents(events);
+    state.holders = roleHoldersFromEvents(await fetchEvents("RoleUpdated"));
   } catch (error) {
     console.error("Não foi possível listar as carteiras por perfil:", error);
   }
@@ -808,20 +842,13 @@ function renderDocuments(documents) {
 }
 
 async function loadEvents() {
-  const { web3, contract } = reader();
-  if (!contract) return;
+  if (!reader().contract && !state.readContract) return;
   const list = byId("events-list");
   list.innerHTML = '<p class="empty-state">Consultando os logs da Sepolia...</p>';
   try {
-    const latest = Number(await web3.eth.getBlockNumber());
-    const configuredStart = Number(DEPLOYMENT_BLOCK || 0);
-    const fromBlock = Math.max(configuredStart, latest - 49_999, 0);
-    const events = await contract.getPastEvents("allEvents", {
-      fromBlock,
-      toBlock: "latest",
-    });
+    const events = await fetchEvents("allEvents");
     if (!events.length) {
-      list.innerHTML = '<p class="empty-state">Nenhum evento encontrado no intervalo consultado.</p>';
+      list.innerHTML = '<p class="empty-state">Nenhum evento encontrado desde a implantação.</p>';
       return;
     }
     list.innerHTML = events
@@ -830,7 +857,8 @@ async function loadEvents() {
       .map((event) => renderEvent(event))
       .join("");
   } catch (error) {
-    list.innerHTML = `<p class="empty-state">${escapeHtml(decodeContractError(error))}</p>`;
+    list.innerHTML = `<p class="empty-state">Não foi possível ler os eventos agora. Atualize em alguns segundos.</p>`;
+    console.error("Eventos:", error);
   }
 }
 
