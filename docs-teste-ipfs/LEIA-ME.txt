@@ -1,0 +1,26 @@
+DOCUMENTOS DE TESTE DO ECOORIGEM (todos fictícios, sem dados pessoais)
+
+Para registrar em: https://eco-origem.vercel.app, aba Documentos.
+Só quem está com a custódia do lote consegue registrar. A custódia muda a cada etapa:
+
+Etapa do lote       Quem registra    Arquivo sugerido
+Cadastrado          Produtor         certificado-origem-teste.pdf  ou  ficha-manejo-teste.pdf
+Beneficiado         Beneficiador     laudo-beneficiamento-teste.pdf  ou  laudo-qualidade-teste.pdf
+Em transporte       Transportador    registro-transporte-teste.pdf
+Distribuído         Distribuidor     nota-recebimento-teste.pdf
+
+SHA-256 de cada arquivo (é o hash que fica registrado na blockchain, com prefixo 0x no site):
+17518199cfc4ab6ec5bacfd7ed6ae2063242be7f941e0a2345124c4b86f0ca7f  certificado-origem-teste.pdf
+7939f2af4e89fa3c771f76665f30e5b3337d82f255a86da5f81d498a485768c2  ficha-manejo-teste.pdf
+3eb633abd149090b676990fcb1400f0ebb9853d8d09d1881877e8c9c24bbd74f  laudo-beneficiamento-teste.pdf
+380ce790a30bfc80b19902fd829364755dd798bb8affe236288041959d9cede3  laudo-qualidade-teste.pdf
+ac9c6be901737b3f4c8417a52e177e2402f8a5a2641b7ba15ecb3e9697609e69  registro-transporte-teste.pdf
+0d10034a4cffcf5df1717e9de652f261b5fb5a4790c693bda97e8e22bc7b322e  nota-recebimento-teste.pdf
+4593a7c323af8a30a5aa0223f0268628f7348fc6d884037164d9eca2e17be5cd  laudo-beneficiamento-teste-ADULTERADO.pdf
+
+COMO DEMONSTRAR A INTEGRIDADE
+1. Registre laudo-beneficiamento-teste.pdf em um lote (aba Documentos). Pode enviar antes ao IPFS (Pinata) e colar o CID.
+2. Em Lotes, cartão "Verificar um arquivo": escolha o lote e laudo-beneficiamento-teste.pdf. Resultado: ÍNTEGRO.
+3. Repita com laudo-beneficiamento-teste-ADULTERADO.pdf (mesmo laudo com o resultado trocado para REPROVADO). Resultado: NÃO CONFERE.
+
+OBSERVAÇÃO: cada arquivo só pode ser registrado uma vez por lote (o contrato recusa hash repetido no mesmo lote).
